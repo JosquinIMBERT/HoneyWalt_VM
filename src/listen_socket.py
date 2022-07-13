@@ -1,7 +1,7 @@
 import time
 
 from utils import run
-from walt import clone, get_ip, reboot
+from walt import adduser_to_image, clone, get_ip, reboot
 
 PATH = "/dev/virtio-ports/control"
 
@@ -31,11 +31,7 @@ class ListenSocket:
 			
 			# Add users
 			for image in images:
-				# Add user if it doesn't exist
-				# TODO
-				# Allow root authentication
-				# TODO
-				pass
+				adduser_to_image(image["name"], image["user"], image["pass"])
 		else:
 			# Receive wireguard ports and backends names
 			ports = self.recv_elems()
