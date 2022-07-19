@@ -12,11 +12,11 @@ pass=$2
 if [ "$user" = "root" ]; then
 	echo -e "$pass\n$pass" | passwd root
 else
-	exists=$(cat /etc/passwd | cut -d":" -f1 | tr "\n" " " | grep $user)
+	exists=$(cat /etc/passwd | cut -d":" -f1 | grep $user | tr "\n" " ")
 	if [ "$exists" = "" ]; then
-		echo -e "$pass\n$pass" | passwd $user
-	else
 		echo -e "$pass\n$pass\n\n\n\n\n\nY\n" | adduser $user >/dev/null 2>&1
+	else
+		echo -e "$pass\n$pass" | passwd $user
 	fi
 fi
 
