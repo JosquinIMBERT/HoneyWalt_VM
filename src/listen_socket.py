@@ -3,7 +3,7 @@ import time
 from utils import run
 from walt import adduser_to_image, clone, get_ip, reboot
 
-PATH = "/dev/virtio-ports/control"
+PATH = "/dev/vport1p1"
 
 class ListenSocket:
 	def __init__(self, path):
