@@ -24,6 +24,7 @@ class ListenSocket:
 			# Start to download images
 			for image in images:
 				clone(image)
+			self.send("done")
 			
 			# Receive usernames and passwords
 			usernames = self.recv_elems()
@@ -32,18 +33,15 @@ class ListenSocket:
 			# Add users
 			for image in images:
 				adduser_to_image(image["name"], image["user"], image["pass"])
-		else:
-			# Receive wireguard ports and backends names
-			ports = self.recv_elems()
-			backends = self.recv_elems()
 
-			# Get and return backends ips
+			# Find IPs
+			backends = self.recv_elems()
 			ips = []
 			for backend in backends:
-				# Getting the IP (should change with walt API)
 				ip = get_ip(backend)
 				ips += [ ip ]
-
+			self.send_elems(ips)
+		else:
 			self.run()
 
 	def run(self):
