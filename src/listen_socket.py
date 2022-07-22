@@ -81,10 +81,10 @@ class ListenSocket:
 				continue
 
 	def send_confirm(self):
-		self.sock.write(b"1")
+		self.sock.write(b"\x01\n")
 
 	def send_fail(self):
-		self.sock.write(b"0")
+		self.sock.write(b"\x00\n")
 
 	def send(self, string):
 		self.sock.write(to_bytes(string+"\n"))
@@ -92,15 +92,15 @@ class ListenSocket:
 	def recv(self):
 		return to_string(self.sock.readline())
 
-	def send_elems(self, elems):
+	def send_elems(self, elems, sep=" "):
 		str_elems = ""
 		for elem in elems:
-			str_elems += str(elem)
-		self.sock.write(str_elems)
+			str_elems += str(elem) + sep
+		self.send(str_elems)
 
-	def recv_elems(self):
-		elems = self.sock.readline()
-		return elems.split(" ")
+	def recv_elems(self, sep=" "):
+		elems = self.recv()
+		return elems.split(sep)
 
 def main():
 	lsock = ListenSocket(PATH)
