@@ -1,6 +1,6 @@
 import select, time
 
-from utils import run
+from utils import *
 from walt import adduser_to_image, clone, get_ip, reboot
 
 PATH = "/dev/vport1p1"
@@ -84,16 +84,27 @@ class ListenSocket:
 				continue
 
 	def send_confirm(self):
-		self.sock.write(b"\x01\n")
+		self.send("1")
 
 	def send_fail(self):
-		self.sock.write(b"\x00\n")
+		self.send("0")
 
 	def send(self, string):
 		self.sock.write(to_bytes(string+"\n"))
 
-	def recv(self):
-		return to_string(self.sock.readline())
+	def recv(self, max_iter=30):
+		res = ""
+		i = 0
+		while True and i<max_iter:
+			i+=1
+			res = self.sock.readline()
+			if not res:
+				time.sleep(1)
+				continue
+			break
+		if i >= max_iter:
+			eprint("ListenSocket:recv: error: reached max_iter")
+		return to_string(res)
 
 	def send_elems(self, elems, sep=" "):
 		str_elems = ""
@@ -102,8 +113,8 @@ class ListenSocket:
 		self.send(str_elems)
 
 	def recv_elems(self, sep=" "):
-		elems = self.recv()
-		if elems.strip()=="":
+		elems = self.recv().strip()
+		if not elems:
 			return []
 		return elems.split(sep)
 
