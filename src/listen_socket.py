@@ -100,6 +100,8 @@ class ListenSocket:
 
 	def recv_elems(self, sep=" "):
 		elems = self.recv()
+		if elems.strip()=="":
+			return []
 		return elems.split(sep)
 
 def main():
