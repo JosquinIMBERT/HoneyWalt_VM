@@ -101,7 +101,7 @@ class ListenSocket:
 	def recv(self, max_iter=30):
 		res = ""
 		i = 0
-		while True and i<max_iter:
+		while i<max_iter:
 			i+=1
 			res = self.sock.readline()
 			if not res:

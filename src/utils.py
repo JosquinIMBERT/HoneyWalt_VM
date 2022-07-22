@@ -1,4 +1,5 @@
-import subprocess
+import subprocess, sys
+from os.path import abspath, dirname, exists, join
 
 # Print an error and exit
 def eprint(*args, exit=True, **kwargs):
