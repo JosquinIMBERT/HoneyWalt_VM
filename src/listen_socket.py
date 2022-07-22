@@ -12,7 +12,7 @@ class ListenSocket:
 	
 	def initiate(self):
 		# Tell the controller the VM booted
-		self.send("boot")
+		self.send_confirm()
 
 		# Receive phase
 		phase = int(self.recv())
@@ -40,6 +40,8 @@ class ListenSocket:
 			for backend in backends:
 				ip = get_ip(backend)
 				ips += [ ip ]
+			# IPs are the only string values sent to the controller
+			# They are sent __before__ to expose the VM
 			self.send_elems(ips)
 		else:
 			self.run()
@@ -61,10 +63,16 @@ class ListenSocket:
 				func = switch.get(op)
 				if func:
 					func(data)
-					self.send("done")
+					self.send_confirm()
 			else:
 				time.sleep(2)
 				continue
+
+	def send_confirm(self):
+		self.sock.write(b"1")
+
+	def send_fail(self):
+		self.sock.write(b"0")
 
 	def send(self, string):
 		self.sock.write(to_bytes(string+"\n"))
