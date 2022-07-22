@@ -5,6 +5,14 @@ from walt import adduser_to_image, clone, get_ip, reboot
 
 PATH = "/dev/vport1p1"
 
+def to_bytes(string):
+	b = bytearray()
+	b.extend(string.encode())
+	return b
+
+def to_string(bytes):
+	return bytes.decode('ascii')
+
 class ListenSocket:
 	def __init__(self, path):
 		self.path = path
@@ -89,14 +97,6 @@ class ListenSocket:
 	def recv_elems(self):
 		elems = self.sock.readline()
 		return elems.split(" ")
-    
-	def to_bytes(string):
-		b = bytearray()
-		b.extend(string.encode())
-		return b
-
-	def to_string(bytes):
-		return bytes.decode('ascii')
 
 def main():
 	lsock = ListenSocket(PATH)
