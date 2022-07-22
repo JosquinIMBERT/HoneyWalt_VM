@@ -1,4 +1,4 @@
-import time
+import select, time
 
 from utils import run
 from walt import adduser_to_image, clone, get_ip, reboot
@@ -23,7 +23,11 @@ class ListenSocket:
 		self.send_confirm()
 
 		# Receive phase
-		phase = int(self.recv())
+		ready, _, _ = select.select([self.sock], [], [], 15)
+		if len(ready) > 0:
+			phase = int(self.recv())
+		else:
+			eprint("Failed to get phase")
 
 		if phase==1:
 			# Receive images
