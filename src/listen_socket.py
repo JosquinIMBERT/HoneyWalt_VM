@@ -20,43 +20,49 @@ class ListenSocket:
 	
 	def initiate(self):
 		# Tell the controller the VM booted
+		print("Confirm boot.")
 		self.send_confirm()
 
 		# Receive phase
-		ready, _, _ = select.select([self.sock], [], [], 15)
-		if len(ready) > 0:
-			phase = self.recv()
-			if phase.strip() == "":
-				eprint("Failed to get phase")
-			phase = int(phase)
-		else:
-			eprint("Failed to get phase")
+		print("Receive phase.")
+		phase = int(self.recv())
+		print("Phase: "+str(phase))
 
 		if phase==1:
 			# Receive images
+			print("Receive images.")
 			images = self.recv_elems()
+			print("Images: "+str(images))
 			
 			# Start to download images
 			for image in images:
 				clone(image)
+			print("Confirm image clone.")
 			self.send_confirm()
 			
 			# Receive usernames and passwords
+			print("Receive usernames.")
 			usernames = self.recv_elems()
+			print("Usernames: "+str(usernames))
+			print("Receive passwords.")
 			passwords = self.recv_elems()
+			print("Passwords: "+str(passwords))
 			
 			# Add users
 			for image in images:
 				adduser_to_image(image["name"], image["user"], image["pass"])
 
 			# Find IPs
+			print("Receive backends.")
 			backends = self.recv_elems()
+			print("Backends: "+str(backends))
 			ips = []
 			for backend in backends:
 				ip = get_ip(backend)
 				ips += [ ip ]
 			# IPs are the only string values sent to the controller
 			# They are sent __before__ to expose the VM
+			print("Send IPs.")
 			self.send_elems(ips)
 		else:
 			self.run()
