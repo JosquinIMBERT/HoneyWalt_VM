@@ -25,7 +25,10 @@ class ListenSocket:
 		# Receive phase
 		ready, _, _ = select.select([self.sock], [], [], 15)
 		if len(ready) > 0:
-			phase = int(self.recv())
+			phase = self.recv()
+			if phase.strip() == "":
+				eprint("Failed to get phase")
+			phase = int(phase)
 		else:
 			eprint("Failed to get phase")
 
@@ -36,7 +39,7 @@ class ListenSocket:
 			# Start to download images
 			for image in images:
 				clone(image)
-			self.send("done")
+			self.send_confirm()
 			
 			# Receive usernames and passwords
 			usernames = self.recv_elems()
