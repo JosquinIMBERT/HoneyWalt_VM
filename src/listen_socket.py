@@ -1,9 +1,7 @@
-import select, time
+import select, socket, time
 
 from utils import *
 from walt import adduser_to_image, clone, get_ip, reboot
-
-PATH = "/dev/vport1p1"
 
 def to_bytes(string):
 	b = bytearray()
@@ -15,8 +13,8 @@ def to_string(bytes):
 
 class ListenSocket:
 	def __init__(self, port):
-		self.sock = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM)
-		self.sock.connect((socket.VMADDR_CID_HOST, port))
+		self.socket = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM)
+		self.socket.connect((socket.VMADDR_CID_HOST, port))
 	
 	def initiate(self):
 		# Receive phase
@@ -112,16 +110,17 @@ class ListenSocket:
 		str_elems = ""
 		for elem in elems:
 			str_elems += str(elem) + sep
-		self.send(str_elems)
+		self.send("["+str_elems+"]")
 
 	def recv_elems(self, sep=" "):
 		elems = self.recv().strip()
+		elems = elems[1:len(elems)-1].strip()
 		if not elems:
 			return []
 		return elems.split(sep)
 
 def main():
-	lsock = ListenSocket(PATH)
+	lsock = ListenSocket(5555)
 	lsock.initiate()
 
 if __name__ == '__main__':
