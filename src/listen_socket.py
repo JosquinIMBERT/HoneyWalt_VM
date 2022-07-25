@@ -39,9 +39,11 @@ class ListenSocket:
 			print("Receive usernames.")
 			usernames = self.recv_elems()
 			print("Usernames: "+str(usernames))
+			self.send_confirm()
 			print("Receive passwords.")
 			passwords = self.recv_elems()
 			print("Passwords: "+str(passwords))
+			self.send_confirm()
 			
 			# Add users
 			for image in images:
@@ -52,6 +54,7 @@ class ListenSocket:
 			print("Receive backends.")
 			backends = self.recv_elems()
 			print("Backends: "+str(backends))
+			self.send_confirm()
 			ips = []
 			for backend in backends:
 				ip = get_ip(backend)
@@ -60,6 +63,7 @@ class ListenSocket:
 			# They are sent __before__ to expose the VM
 			print("Send IPs.")
 			self.send_elems(ips)
+			self.wait_confirm()
 		else:
 			self.run()
 
@@ -91,6 +95,10 @@ class ListenSocket:
 	def send_fail(self):
 		self.send("0")
 
+	def wait_confirm(self, timeout=30):
+		res = self.recv(timeout=timeout)
+		return res[0] == "1"
+
 	def send(self, string):
 		self.socket.send(to_bytes(string+"\n"))
 
@@ -113,7 +121,7 @@ class ListenSocket:
 		self.send("["+str_elems+"]")
 
 	def recv_elems(self, sep=" "):
-		elems = self.recv().strip()
+		elems = str(self.recv()).strip()
 		elems = elems[1:len(elems)-1].strip()
 		if not elems:
 			return []
