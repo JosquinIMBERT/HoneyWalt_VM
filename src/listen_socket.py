@@ -58,7 +58,7 @@ class ListenSocket:
 			# IPs is the only information sent to the controller
 			# They are sent __before__ to expose the VM
 			self.send_elems(ips)
-			prnt("Images: ", ips)
+			print("Images: ", ips)
 			self.wait_confirm()
 		else:
 			self.run()
@@ -107,8 +107,9 @@ class ListenSocket:
 		except:
 			eprint("ListenSocket.recv: error: an unknown error occured")
 		else:
-			return res
-		return to_string(res)
+			if not res:
+				eprint("ControlSocket.recv: error: Connection terminated")
+			return to_string(res)
 
 	def send_elems(self, elems, sep=" "):
 		str_elems = ""
