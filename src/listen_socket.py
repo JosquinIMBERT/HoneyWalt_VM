@@ -27,8 +27,7 @@ class ListenSocket:
 			
 			# Start to download images
 			for image in images:
-				#clone(image)
-				continue
+				clone(image)
 			print("Images: ", images)
 			self.send_confirm()
 			
@@ -43,8 +42,7 @@ class ListenSocket:
 			
 			# Add users
 			for image in images:
-				#adduser_to_image(image["name"], image["user"], image["pass"])
-				continue
+				adduser_to_image(image["name"], image["user"], image["pass"])
 
 			# Find IPs
 			backends = self.recv_elems()
