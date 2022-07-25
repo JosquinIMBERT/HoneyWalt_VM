@@ -1,4 +1,4 @@
-from string import template
+from string import Template
 
 from utils import *
 
