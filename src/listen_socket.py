@@ -8,8 +8,8 @@ def to_bytes(string):
 	b.extend(string.encode())
 	return b
 
-def to_string(bytes):
-	return bytes.decode('ascii')
+def to_string(bytes_obj):
+	return bytes_obj.decode('ascii')
 
 class ListenSocket:
 	def __init__(self, port):
@@ -18,51 +18,47 @@ class ListenSocket:
 	
 	def initiate(self):
 		# Receive phase
-		print("Receive phase.")
 		phase = int(self.recv())
-		print("Phase: "+str(phase))
+		self.send_confirm()
 
 		if phase==1:
 			# Receive images
-			print("Receive images.")
 			images = self.recv_elems()
-			print("Images: "+str(images))
 			
 			# Start to download images
 			for image in images:
 				#clone(image)
-				print(image)
-			print("Confirm image clone.")
+				continue
+			print("Images: ", images)
 			self.send_confirm()
 			
 			# Receive usernames and passwords
-			print("Receive usernames.")
 			usernames = self.recv_elems()
-			print("Usernames: "+str(usernames))
+			print("Usernames: ", usernames)
 			self.send_confirm()
-			print("Receive passwords.")
+
 			passwords = self.recv_elems()
-			print("Passwords: "+str(passwords))
+			print("Passwords: ", passwords)
 			self.send_confirm()
 			
 			# Add users
 			for image in images:
 				#adduser_to_image(image["name"], image["user"], image["pass"])
-				print(image)
+				continue
 
 			# Find IPs
-			print("Receive backends.")
 			backends = self.recv_elems()
-			print("Backends: "+str(backends))
+			print("Backends: ", backends)
 			self.send_confirm()
+
 			ips = []
 			for backend in backends:
 				ip = get_ip(backend)
 				ips += [ ip ]
-			# IPs are the only string values sent to the controller
+			# IPs is the only information sent to the controller
 			# They are sent __before__ to expose the VM
-			print("Send IPs.")
 			self.send_elems(ips)
+			prnt("Images: ", ips)
 			self.wait_confirm()
 		else:
 			self.run()
@@ -118,11 +114,10 @@ class ListenSocket:
 		str_elems = ""
 		for elem in elems:
 			str_elems += str(elem) + sep
-		self.send("["+str_elems+"]")
+		self.send(str_elems)
 
 	def recv_elems(self, sep=" "):
-		elems = str(self.recv()).strip()
-		elems = elems[1:len(elems)-1].strip()
+		elems = self.recv().strip()
 		if not elems:
 			return []
 		return elems.split(sep)
