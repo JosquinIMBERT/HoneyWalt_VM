@@ -14,15 +14,11 @@ def to_string(bytes):
 	return bytes.decode('ascii')
 
 class ListenSocket:
-	def __init__(self, path):
-		self.path = path
-		self.sock = open(path, "a+b", 0)
+	def __init__(self, port):
+		self.sock = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM)
+		self.sock.connect((socket.VMADDR_CID_HOST, port))
 	
 	def initiate(self):
-		# Tell the controller the VM booted
-		print("Confirm boot.")
-		self.send_confirm()
-
 		# Receive phase
 		print("Receive phase.")
 		phase = int(self.recv())
@@ -36,7 +32,8 @@ class ListenSocket:
 			
 			# Start to download images
 			for image in images:
-				clone(image)
+				#clone(image)
+				print(image)
 			print("Confirm image clone.")
 			self.send_confirm()
 			
@@ -50,7 +47,8 @@ class ListenSocket:
 			
 			# Add users
 			for image in images:
-				adduser_to_image(image["name"], image["user"], image["pass"])
+				#adduser_to_image(image["name"], image["user"], image["pass"])
+				print(image)
 
 			# Find IPs
 			print("Receive backends.")
@@ -96,20 +94,18 @@ class ListenSocket:
 		self.send("0")
 
 	def send(self, string):
-		self.sock.write(to_bytes(string+"\n"))
+		self.socket.send(to_bytes(string+"\n"))
 
-	def recv(self, max_iter=30):
-		res = ""
-		i = 0
-		while i<max_iter:
-			i+=1
-			res = self.sock.readline()
-			if not res:
-				time.sleep(1)
-				continue
-			break
-		if i >= max_iter:
-			eprint("ListenSocket:recv: error: reached max_iter")
+	def recv(self, timeout=30):
+		self.socket.settimeout(timeout)
+		try:
+			res = self.socket.recv(2048)
+		except socket.timeout:
+			eprint("ListenSocket.recv: error: reached timeout")
+		except:
+			eprint("ListenSocket.recv: error: an unknown error occured")
+		else:
+			return res
 		return to_string(res)
 
 	def send_elems(self, elems, sep=" "):
