@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ $# -ne 1 ]]; then
+if [[ $# -ne 2 ]]; then
 	echo "usage: $0 <username> <password>"
 	exit 1
 fi
@@ -22,6 +22,4 @@ fi
 
 # Allow ssh password authentication for root
 sed 's/.*PermitRootLogin.*/PermitRootLogin yes/g' /etc/ssh/sshd_config >/tmp/tmp_sshd_config
-mv /tmp_sshd_config /etc/ssh/sshd_config
-
-exit
+mv /tmp/tmp_sshd_config /etc/ssh/sshd_config

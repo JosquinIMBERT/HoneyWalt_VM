@@ -1,0 +1,6 @@
+chmod u+x ./manage_users.sh
+./manage_users.sh ${username} ${password}
+rm ./manage_users.sh
+exit
+${image}
+y

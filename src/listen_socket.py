@@ -41,8 +41,11 @@ class ListenSocket:
 			self.send_confirm()
 			
 			# Add users
-			for image in images:
-				adduser_to_image(image["name"], image["user"], image["pass"])
+			i=0
+			for i in range(len(images)):
+				# TODO: fix this function (for now, the user should be added manually)
+				#adduser_to_image(images[i], usernames[i], passwords[i])
+				i+=1
 
 			# Find IPs
 			backends = self.recv_elems()
