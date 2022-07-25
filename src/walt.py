@@ -24,7 +24,7 @@ def get_ip(node):
 		grep \""+node+"\" | \
 		tr -s \"[:blank:]\" | \
 		cut -d\" \" -f4"
-	return run(command, "walt get_ip: error: failed to get node ip", output=True)
+	return run(command, "walt get_ip: error: failed to get node ip", output=True).strip()
 
 def reboot(node):
 	command = "walt node reboot "+node+" --hard"
