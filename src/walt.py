@@ -18,10 +18,12 @@ def clone(image):
 	run("walt image clone "+image, "walt clone: error: failed to clone image")
 
 def get_ip(node):
-	command = "walt node show | \
+	# We consider the node doesn't belong to anyone.
+	# If it belong to root or to another user, we won't get the ip
+	command = "walt node show --all | \
 		grep \""+node+"\" | \
 		tr -s \"[:blank:]\" | \
-		cut -d\" \" -f5"
+		cut -d\" \" -f4"
 	return run(command, "walt get_ip: error: failed to get node ip", output=True)
 
 def reboot(node):
