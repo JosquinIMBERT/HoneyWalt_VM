@@ -56,7 +56,7 @@ def wait_boots(nodes):
 		i+=1
 		booted_nodes = get_booted_nodes()
 		if equal(booted_nodes, nodes):
-			break
+			return True
 		else:
 			time.sleep(5)
-	return i<24
+	return False
