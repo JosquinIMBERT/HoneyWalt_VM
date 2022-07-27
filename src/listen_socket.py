@@ -1,7 +1,7 @@
 import select, socket, time
 
 from utils import *
-from walt import adduser_to_image, clone, get_ip, reboot
+from walt import *
 
 def to_bytes(string):
 	b = bytearray()
