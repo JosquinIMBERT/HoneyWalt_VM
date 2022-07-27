@@ -70,10 +70,11 @@ class ListenSocket:
 			for i in range(len(backends)):
 				boot(backends[i], images[i])
 
-			if wait_boots(backends):
-				self.send_confirm()
-			else:
-				self.send_fail()
+			self.send_confirm()
+			#if wait_boots(backends):
+			#	self.send_confirm()
+			#else:
+			#	self.send_fail()
 
 			self.run()
 
