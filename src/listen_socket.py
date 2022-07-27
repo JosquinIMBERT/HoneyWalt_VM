@@ -68,6 +68,7 @@ class ListenSocket:
 
 			i=0
 			for i in range(len(backends)):
+				config(backends[i], "NAT")
 				boot(backends[i], images[i])
 
 			self.send_confirm()
