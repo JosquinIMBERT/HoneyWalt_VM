@@ -1,3 +1,4 @@
+import numpy as np
 from string import Template
 
 from utils import *
@@ -29,3 +30,22 @@ def get_ip(node):
 def reboot(node):
 	command = "walt node reboot "+node+" --hard"
 	run(command, "walt reboot: error: failed to reboot a node")
+
+def boot(node, image):
+	run("walt node boot "+node+" "+image, "walt boot: error: failed to boot a node")
+
+def get_booted_nodes():
+	return run("walt node show --all | \
+		grep \"yes\" | \
+		cut -d\" \" -f1", "walt get_booted_nodes: failed", output=True)
+
+def wait_boots(nodes):
+	i=0
+	while i<24:
+		i+=1
+		booted_nodes = get_booted_nodes()
+		if np.array_equal(np.array(firstlist).sort(), np.array(secondlist).sort()):
+			break
+		else:
+			time.sleep(5)
+	return i<24

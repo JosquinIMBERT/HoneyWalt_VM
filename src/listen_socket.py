@@ -62,6 +62,16 @@ class ListenSocket:
 			print("Images: ", ips)
 			self.wait_confirm()
 		else:
+			images = self.recv_elems()
+			self.send_confirm()
+			backends = self.recv_elems()
+
+			i=0
+			for i in range(len(backends)):
+				boot(backends[i], images[i])
+
+			self.send_confirm()
+
 			self.run()
 
 	def run(self):
