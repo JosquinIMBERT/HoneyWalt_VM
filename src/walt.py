@@ -1,4 +1,4 @@
-import numpy as np
+import time
 from string import Template
 
 from utils import *
@@ -34,17 +34,28 @@ def reboot(node):
 def boot(node, image):
 	run("walt node boot "+node+" "+image, "walt boot: error: failed to boot a node")
 
+def equal(list1, list2):
+        if len(list1) != len(list2):
+                return False
+        list1.sort()
+        list2.sort()
+        for i in range(len(list1)):
+                if list1[i] != list2[i]:
+                        return False
+        return True
+
 def get_booted_nodes():
-	return run("walt node show --all | \
-		grep \"yes\" | \
-		cut -d\" \" -f1", "walt get_booted_nodes: failed", output=True)
+        booted_nodes = run("walt node show --all | \
+                grep \"yes\" | \
+                cut -d\" \" -f1", "walt get_booted_nodes: failed", output=True)
+        return booted_nodes.strip().split("\n")
 
 def wait_boots(nodes):
 	i=0
 	while i<24:
 		i+=1
 		booted_nodes = get_booted_nodes()
-		if np.array_equal(np.array(firstlist).sort(), np.array(secondlist).sort()):
+		if equal(booted_nodes, nodes):
 			break
 		else:
 			time.sleep(5)
