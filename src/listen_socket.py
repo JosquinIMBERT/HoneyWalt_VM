@@ -70,7 +70,6 @@ class ListenSocket:
 
 			i=0
 			for i in range(len(backends)):
-				print("Configuring and booting "+backends[i]+" w/ img "+images[i])
 				config(backends[i], "NAT")
 				boot(backends[i], images[i])
 
