@@ -63,11 +63,14 @@ class ListenSocket:
 			self.wait_confirm()
 		else:
 			images = self.recv_elems()
+			print("Images: ", images)
 			self.send_confirm()
 			backends = self.recv_elems()
+			print("Backends: ", backends)
 
 			i=0
 			for i in range(len(backends)):
+				print("Configuring and booting "+backends[i]+" w/ img "+images[i])
 				config(backends[i], "NAT")
 				boot(backends[i], images[i])
 
