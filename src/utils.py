@@ -12,9 +12,12 @@ def get_root_path():
 	path = abspath(dirname(__file__))
 	return "/".join(path.split("/")[:-1])
 
-def run(command, error, output=False):
-	res = subprocess.run(command, shell=True ,check=True, text=True, capture_output=output)
+def run(command, error, output=False, ignore_errors=[]):
+	check = len(ignore_errors)<=0
+	res = subprocess.run(command, shell=True , check=check, text=True, capture_output=output)
 	if res.returncode != 0:
+		if res.returncode in ignore_errors:
+			return ""
 		eprint(error)
 	return str(res.stdout)
 

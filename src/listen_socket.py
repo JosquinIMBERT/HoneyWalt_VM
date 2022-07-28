@@ -47,11 +47,26 @@ class ListenSocket:
 				#adduser_to_image(images[i], usernames[i], passwords[i])
 				i+=1
 
-			# Find IPs
+			# Receive backends
 			backends = self.recv_elems()
 			print("Backends: ", backends)
 			self.send_confirm()
 
+			# Receive mac addresses
+			macs = self.recv_elems()
+			print("MACs: ", backends)
+			self.send_confirm()
+
+			if len(macs) != len(backends):
+				eprint("ListenSocket.initiate: invalid number of MACs/backends")
+
+			# Renaming the backends
+			for i in range(len(backends)):
+				if not node_exists(backends[i]):
+					curr_name = get_name(macs[i])
+					rename(curr_name, backends[i])
+
+			# Find IPs
 			ips = []
 			for backend in backends:
 				ip = get_ip(backend)

@@ -27,6 +27,22 @@ def get_ip(node):
 		cut -d\" \" -f4"
 	return run(command, "walt get_ip: error: failed to get node ip", output=True).strip()
 
+def get_name(mac_addr):
+	command = "walt device show | \
+		grep \""+mac_addr+"\" | \
+		tr -s \"[:blank:]\" | \
+		cut -d\" \" -f1"
+	return run(command, "walt get_name: error: failed", output=True).strip()
+
+def node_exists(node):
+	command = "walt node show --all | grep \"^"+node+" \""
+	res = run(command, "walt node_exists: error: failed", output=True, ignore_errors=[1])
+	return res != ""
+
+def rename(old_name, new_name):
+	command = "walt device rename "+old_name+" "+new_name
+	run(command, "walt rename: error: failed")
+
 def reboot(node):
 	command = "walt node reboot "+node+" --hard"
 	run(command, "walt reboot: error: failed to reboot a node")
@@ -36,6 +52,8 @@ def config(node, netsetup):
 
 def boot(node, image):
 	run("walt node boot "+node+" "+image, "walt boot: error: failed to boot a node")
+
+
 
 def equal(list1, list2):
         if len(list1) != len(list2):
