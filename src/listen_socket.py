@@ -83,9 +83,14 @@ class ListenSocket:
 			backends = self.recv_elems()
 			print("Backends: ", backends)
 
+			# I had a problem when running manually the config and boot commands successively
+			# I try running first the config commands, waiting and then running the boot cmds
 			i=0
 			for i in range(len(backends)):
 				config(backends[i], "NAT")
+			time.sleep(5)
+			i=0
+			for i in range(len(backends)):
 				boot(backends[i], images[i])
 
 			self.send_confirm()
