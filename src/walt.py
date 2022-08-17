@@ -1,4 +1,4 @@
-import time
+import time, sys
 from string import Template
 
 from utils import *
@@ -53,6 +53,7 @@ def config(node, netsetup):
 def boot(node, image):
 	res = run("walt node boot "+node+" "+image, "walt boot: error: failed to boot a node", output=True, ignore_errors=[1])
 	print(res)
+	sys.exit(1) # Just for debugging
 
 
 

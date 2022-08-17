@@ -17,7 +17,7 @@ def run(command, error, output=False, ignore_errors=[]):
 	res = subprocess.run(command, shell=True , check=check, text=True, capture_output=output)
 	if res.returncode != 0:
 		if res.returncode in ignore_errors:
-			return ""
+			return str(res.stdout)+" "+str(res.stderr)
 		eprint(error)
 	return str(res.stdout)
 
