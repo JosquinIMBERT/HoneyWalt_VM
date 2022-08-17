@@ -51,7 +51,8 @@ def config(node, netsetup):
 	run("walt node config "+node+" netsetup="+netsetup, "walt config: failed")
 
 def boot(node, image):
-	run("walt node boot "+node+" "+image, "walt boot: error: failed to boot a node")
+	res = run("walt node boot "+node+" "+image, "walt boot: error: failed to boot a node", output=True)
+	print(res)
 
 
 
