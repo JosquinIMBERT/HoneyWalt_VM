@@ -51,10 +51,7 @@ def config(node, netsetup):
 	run("walt node config "+node+" netsetup="+netsetup, "walt config: failed")
 
 def boot(node, image):
-	res = run("walt node boot "+node+" "+image, "walt boot: error: failed to boot a node", output=True, ignore_errors=[1])
-	print(res)
-	sys.exit(1) # Just for debugging
-
+	run("walt node boot "+node+" "+image, "walt boot: error: failed to boot a node")
 
 
 def equal(list1, list2):
