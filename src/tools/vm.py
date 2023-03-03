@@ -1,10 +1,13 @@
 # External
-import json, socket
+import socket
 
-from common.utils.controller import *
+# Internal
+from common.utils.controller import Controller
 from common.utils.logs import *
 from common.utils.sockets import ClientSocket
+from common.utils.system import *
 from common.vm.proto import *
+import glob
 
 class VMController(Controller):
 	def __init__(self):
@@ -139,9 +142,7 @@ class VMController(Controller):
 			log(ERROR, self.name()+".cmd_vm_commit: cannot commit in run phase")
 			return {"success": False, "error": ["cannot commit in run phase"]}
 		else:
-			# Write the configuration file
-			with open(to_root_path("etc/honeywalt_vm.cfg"), "w") as conf_file:
-				conf_file.write(json.dumps(glob.DEVS, indent=4))
+			glob.SERVER.WALT_CONTROLLER.dump_devices()
 			return {"success": True}
 
 	def cmd_vm_shutdown(self):

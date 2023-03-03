@@ -1,6 +1,13 @@
+# External
 from python_wireguard import Client, Key, ServerConnection
 
-global WG_PEER_IP, WG_PEER_MASK
+# Internal
+from common.utils.logs import *
+from common.utils.misc import *
+from common.utils.system import *
+import glob
+
+global WG_PEER_IP
 WG_PEER_IP = "192.168."
 
 class WireguardController:
@@ -57,7 +64,7 @@ class WireguardController:
 			client.set_server(server_conn)
 			client.connect()
 
-			post_res = post_up(dev["ip"], dev["door_port"])
+			post_res = self.post_up(dev["ip"], dev["door_port"])
 			if not post_res["success"]:
 				if hasattr(post_res, "warning"): res["warning"] += post_res["warning"]
 				if hasattr(post_res, "error"): res["error"] += post_res["error"]

@@ -4,9 +4,9 @@ import signal
 # Internal
 sys.path[0] = os.path.join(os.environ["HONEYWALT_VM_HOME"],"src/")
 import glob
+from tools.vm import VMController
 from tools.walt import WaltController
 from tools.wireguard import WireguardController
-from tools.vm import VMController
 
 def handle(signum, frame):
 	glob.SERVER.stop()

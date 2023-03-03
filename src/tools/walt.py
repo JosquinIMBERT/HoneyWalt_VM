@@ -1,4 +1,12 @@
+# External
+import json
 import walt.common.api as waltapi
+
+# Internal
+from common.utils.files import *
+from common.utils.logs import *
+from common.utils.misc import *
+import glob
 
 class WaltController:
 	def __init__(self):
@@ -13,6 +21,11 @@ class WaltController:
 	def load_devices(self):
 		with open(to_root_path("etc/honeywalt_vm.cfg"), "r") as conf_file:
 			glob.DEVS = json.load(conf_file)
+
+	def dump_devices(self):
+		# Write the configuration file
+		with open(to_root_path("etc/honeywalt_vm.cfg"), "w") as conf_file:
+			conf_file.write(json.dumps(glob.DEVS, indent=4))
 
 	def receive_devices(self, devices):
 		res = {"success": True, "warning": [], "error": []}
