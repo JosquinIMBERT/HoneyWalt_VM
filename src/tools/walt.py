@@ -1,0 +1,67 @@
+import walt.common.api as waltapi
+
+class WaltController:
+	def __init__(self):
+		glob.DEVS = []
+
+	def __del__(self):
+		del glob.DEVS
+
+	def name(self):
+		return self.__class__.__name__
+
+	def load_devices(self):
+		with open(to_root_path("etc/honeywalt_vm.cfg"), "r") as conf_file:
+			glob.DEVS = json.load(conf_file)
+
+	def receive_devices(self, devices):
+		res = {"success": True, "warning": [], "error": []}
+		fails = 0
+		images = {}
+
+		for dev in devices:
+			if not find(waltapi.nodes, dev["mac"], "mac"):
+				log(WARNING, self.name()+".receive_devices: unknown device ("+dev["mac"]+")")
+				res["warning"] += ["unknown device ("+dev["mac"]+")"]
+				fails += 1
+				continue
+
+			# Get the image if we don't already have it
+			if not find(waltapi.images, dev["image"], "name"):
+				# TODO
+				# try:
+				# 	waltapi.images.clone(dev["image"])
+				# except:
+				# 	log(WARNING, self.name()+".receive_devices: image "+dev["image"]+" not found")
+				# 	res["warning"] += ["image "+dev["image"]+" not found"]
+				# 	fails += 1
+				#	continue
+				pass
+			
+			# Store the users in each image
+			if not hasattr(images, dev["image"]):
+				images[dev["image"]] = [{"username": dev["username"], "password": dev["password"]}]
+			else:
+				images[dev["image"]] += [{"username": dev["username"], "password": dev["password"]}]
+
+			if not waltapi.nodes[dev["name"]]:
+				curr_name = find(waltapi.nodes, dev["mac"], "mac")["name"]
+				waltapi.nodes[curr_name].rename(dev["name"])
+
+			dev["ip"] = waltapi.nodes[dev["name"]].ip
+
+			glob.DEVS += [dev]
+
+		for image,users in images.items():
+			# TODO
+			#waltapi.images[image].addusers(users)
+			pass
+
+		res["fails"] = fails
+		return res
+
+	def get_ips(self):
+		ips = []
+		for dev in glob.DEVS:
+			ips += [{"name":dev["name"], "ip":dev["ip"]}]
+		return {"success": True, "answer": ips}

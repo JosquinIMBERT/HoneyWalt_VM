@@ -1,22 +1,6 @@
-import time, sys
-from string import Template
+import time
 
 from utils import *
-
-# TODO: fix this function (it doesn't work)
-def adduser_to_image(image, username, password):
-	copy_cmd = "walt image cp "+to_root_path("var/manage_users.sh")+" "+image+":manage_users.sh"
-	run(copy_cmd, "walt adduser_to_image: error: failed to copy script to image")
-	with open(to_root_path("var/image_commands.txt"), "r") as file:
-		add_cmd_temp = Template(file.read())
-	add_cmd = add_cmd_temp.substitute({"username": str(username), "password": str(password), "image": image})
-	run(
-		"echo -e \""+add_cmd+"\" | walt image shell "+image,
-		"walt adduser_to_image: error: failed to run command on image"
-	)
-
-def clone(image):
-	run("walt image clone "+image, "walt clone: error: failed to clone image")
 
 def get_ip(node):
 	# We consider the node doesn't belong to anyone.
@@ -25,34 +9,38 @@ def get_ip(node):
 		grep \""+node+"\" | \
 		tr -s \"[:blank:]\" | \
 		cut -d\" \" -f4"
-	return run(command, "walt get_ip: error: failed to get node ip", output=True).strip()
+	return run(command, "walt get_ip: failed to get node ip", output=True).strip()
 
 def get_name(mac_addr):
 	command = "walt device show | \
 		grep \""+mac_addr+"\" | \
 		tr -s \"[:blank:]\" | \
 		cut -d\" \" -f1"
-	return run(command, "walt get_name: error: failed", output=True).strip()
+	return run(command, "walt get_name: failed", output=True).strip()
 
-def node_exists(node):
-	command = "walt node show --all | grep \"^"+node+" \""
-	res = run(command, "walt node_exists: error: failed", output=True, ignore_errors=[1])
+def name_exists(name):
+	command = "walt node show --all | grep \"^"+name+" \""
+	res = run(command, "walt node_exists: failed", output=True, ignore_errors=[1])
+	return res != ""
+
+def mac_exists(mac):
+	command = "walt device show | tr -s \"[:blank:]\" | cut -d\" \" -f 2 | grep \""+mac+"\""
+	res = run(command, "walt.node.mac_exists: failed", output=True, ignore_errors=[1])
 	return res != ""
 
 def rename(old_name, new_name):
 	command = "walt device rename "+old_name+" "+new_name
-	run(command, "walt rename: error: failed")
+	run(command, "walt rename: failed")
 
 def reboot(node):
 	command = "walt node reboot "+node+" --hard"
-	run(command, "walt reboot: error: failed to reboot a node")
+	run(command, "walt reboot: failed to reboot a node")
 
 def config(node, netsetup):
 	run("walt node config "+node+" netsetup="+netsetup, "walt config: failed")
 
 def boot(node, image):
-	run("walt node boot "+node+" "+image, "walt boot: error: failed to boot a node")
-
+	run("walt node boot "+node+" "+image, "walt boot: failed to boot a node")
 
 def equal(list1, list2):
         if len(list1) != len(list2):
@@ -64,7 +52,7 @@ def equal(list1, list2):
                         return False
         return True
 
-def get_booted_nodes():
+def get_booted():
         booted_nodes = run("walt node show --all | \
                 grep \"yes\" | \
                 cut -d\" \" -f1", "walt get_booted_nodes: failed", output=True)

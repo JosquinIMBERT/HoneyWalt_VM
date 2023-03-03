@@ -1,0 +1,13 @@
+[Interface]
+MTU = 1400
+Table = ${table}
+Address = 192.168.0.${id}/24
+PrivateKey = ${vm_privkey}
+PostUp = ip -4 rule add from ${dev_ip} table ${table}
+PreDown = ip -4 rule del from ${dev_ip} table ${table}
+
+[Peer]
+PublicKey = ${server_pubkey}
+Endpoint = ${server_ip}:${server_port}
+AllowedIPs = 0.0.0.0/0
+PersistentKeepalive = 25
