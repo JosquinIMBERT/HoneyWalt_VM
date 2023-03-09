@@ -146,4 +146,5 @@ class VMController(Controller):
 			return {"success": True}
 
 	def cmd_vm_shutdown(self):
-		run("init 0", self.name()+".cmd_vm_shutdown: Failed to shutdown the VM")
+		if not run("init 0"):
+			log(WARNING, self.name()+".cmd_vm_shutdown: Failed to shutdown the VM")
