@@ -80,7 +80,7 @@ class VMController(Controller):
 			self.socket.send_obj({"success": True})
 		else:
 			log(ERROR, self.name()+".execute: Received invalid command")
-			self.socket.send_obj({"success": True, "error": ["unsupported operation"]})
+			self.socket.send_obj({"success": True, ERROR: ["unsupported operation"]})
 
 
 	#################
@@ -91,7 +91,7 @@ class VMController(Controller):
 		self.phase = self.socket.recv_obj()
 		if not isinstance(self.phase, int) or self.phase not in [COMMIT_PHASE, RUN_PHASE, DEBUG_PHASE]:
 			log(ERROR, self.name()+".cmd_vm_phase: invalid phase")
-			return {"success": False, "error": ["invalid phase type"]}
+			return {"success": False, ERROR: ["invalid phase type"]}
 		if self.phase == RUN_PHASE:
 			glob.SERVER.WALT_CONTROLLER.load_devices()
 		elif self.phase == DEBUG_PHASE:
@@ -104,7 +104,7 @@ class VMController(Controller):
 	def cmd_vm_walt_devs(self):
 		if self.phase != COMMIT_PHASE:
 			log(ERROR, self.name()+".cmd_vm_walt_devs: Received devices during run phase")
-			return {"success": False, "error": ["cannot add devices during run phase"]}
+			return {"success": False, ERROR: ["cannot add devices during run phase"]}
 		else:
 			devs = self.socket.recv_obj()
 			return glob.SERVER.WALT_CONTROLLER.receive_devices(devs)
@@ -115,14 +115,14 @@ class VMController(Controller):
 	def cmd_vm_wg_keygen(self):
 		if self.phase != COMMIT_PHASE:
 			log(WARNING, self.name()+".cmd_wg_keygen: keys can only be generated during commit phase")
-			return {"success": False, "error": ["keys can only be generated during commit phase"]}
+			return {"success": False, ERROR: ["keys can only be generated during commit phase"]}
 		else:
 			return glob.SERVER.WIREGUARD_CONTROLLER.keygen()
 
 	def cmd_vm_wg_doors(self):
 		if self.phase != COMMIT_PHASE:
 			log(WARNING, self.name()+".cmd_wg_doors: doors can only be received during commit phase")
-			return {"success": False, "error": ["doors can only be received during commit phase"]}
+			return {"success": False, ERROR: ["doors can only be received during commit phase"]}
 		else:
 			# Receive public keys
 			doors = self.socket.recv_obj()
@@ -131,7 +131,7 @@ class VMController(Controller):
 	def cmd_vm_wg_up(self):
 		if self.phase != RUN_PHASE:
 			log(ERROR, self.name()+".cmd_vm_wg_up: cannot setup wireguard during run phase")
-			return {"success": False, "error": ["cannot setup wireguard during run phase"]}
+			return {"success": False, ERROR: ["cannot setup wireguard during run phase"]}
 		return glob.SERVER.WIREGUARD_CONTROLLER.up()
 
 	def cmd_vm_wg_down(self):
@@ -140,7 +140,7 @@ class VMController(Controller):
 	def cmd_vm_commit(self):
 		if self.phase != COMMIT_PHASE:
 			log(ERROR, self.name()+".cmd_vm_commit: cannot commit in run phase")
-			return {"success": False, "error": ["cannot commit in run phase"]}
+			return {"success": False, ERROR: ["cannot commit in run phase"]}
 		else:
 			glob.SERVER.WALT_CONTROLLER.dump_devices()
 			return {"success": True}

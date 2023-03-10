@@ -28,14 +28,14 @@ class WaltController:
 			conf_file.write(json.dumps(glob.DEVS, indent=4))
 
 	def receive_devices(self, devices):
-		res = {"success": True, "warning": [], "error": []}
+		res = {"success": True, WARNING: [], ERROR: []}
 		fails = 0
 		images = {}
 
 		for dev in devices:
 			if not find(waltapi.nodes, dev["mac"], "mac"):
 				log(WARNING, self.name()+".receive_devices: unknown device ("+dev["mac"]+")")
-				res["warning"] += ["unknown device ("+dev["mac"]+")"]
+				res[WARNING] += ["unknown device ("+dev["mac"]+")"]
 				fails += 1
 				continue
 
@@ -46,7 +46,7 @@ class WaltController:
 				# 	waltapi.images.clone(dev["image"])
 				# except:
 				# 	log(WARNING, self.name()+".receive_devices: image "+dev["image"]+" not found")
-				# 	res["warning"] += ["image "+dev["image"]+" not found"]
+				# 	res[WARNING] += ["image "+dev["image"]+" not found"]
 				# 	fails += 1
 				#	continue
 				pass
