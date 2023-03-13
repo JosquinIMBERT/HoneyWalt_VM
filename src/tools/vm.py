@@ -32,7 +32,7 @@ class VMController(Controller):
 	def run(self):
 		self.keep_running = True
 		while self.keep_running:
-			if self.connect()
+			if self.connect():
 				disconnected = False
 				while self.keep_running and not disconnected:
 					cmd = self.socket.recv_cmd()
