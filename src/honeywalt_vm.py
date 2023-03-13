@@ -1,8 +1,8 @@
 # External
-import signal
+import os, signal, sys
 
 # Internal
-sys.path[0] = os.path.join(os.environ["HONEYWALT_VM_HOME"],"src/")
+#sys.path[0] = os.path.join(os.environ["HONEYWALT_VM_HOME"],"src/")
 import glob
 from tools.vm import VMController
 from tools.walt import WaltController
