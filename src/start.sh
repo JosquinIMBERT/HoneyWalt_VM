@@ -4,4 +4,5 @@
 
 git -C /root/HoneyWalt_VM/ reset --hard
 git -C /root/HoneyWalt_VM/ pull --recurse-submodules
+/root/HoneyWalt_VM/requirements.sh
 python3 /root/HoneyWalt_VM/src/honeywalt_vm.py
