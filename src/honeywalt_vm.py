@@ -5,9 +5,9 @@ import argparse, os, signal, sys
 #sys.path[0] = os.path.join(os.environ["HONEYWALT_VM_HOME"],"src/")
 from common.utils.logs import *
 import glob
-from tools.vm import VMController
 from tools.walt import WaltController
 from tools.wireguard import WireguardController
+from vm.controller import VMController
 
 def handle(signum, frame):
 	glob.SERVER.stop()
