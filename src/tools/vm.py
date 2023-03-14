@@ -50,7 +50,7 @@ class VMController(Controller):
 	#	 SWITCH  	#
 	#################
 
-	def execute(self):
+	def execute(self, cmd):
 		if cmd == CMD_VM_PHASE:
 			log(INFO, self.name()+".execute: CMD_VM_PHASE")
 			self.exec(self.cmd_vm_phase)
