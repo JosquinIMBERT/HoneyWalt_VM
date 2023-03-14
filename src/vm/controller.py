@@ -20,7 +20,7 @@ class VMController(Controller):
 		del self.socket
 
 	def connect(self):
-		log(DEBUG, self.name()+".connect: connecting to the HoneyWalt_controller")
+		log(DEBUG, self.get_name()+".connect: connecting to the HoneyWalt_controller")
 		return self.socket.connect(socket.VMADDR_CID_HOST, CONTROL_PORT)
 
 	def stop(self):
@@ -43,7 +43,7 @@ class VMController(Controller):
 					else:
 						self.execute(cmd)
 				if disconnected:
-					log(INFO, self.name()+".run: disconnected")
+					log(INFO, self.get_name()+".run: disconnected")
 			else:
 				time.sleep(sleep)
 
@@ -54,36 +54,36 @@ class VMController(Controller):
 
 	def execute(self, cmd):
 		if cmd == CMD_VM_PHASE:
-			log(INFO, self.name()+".execute: CMD_VM_PHASE")
+			log(INFO, self.get_name()+".execute: CMD_VM_PHASE")
 			self.exec(self.cmd_vm_phase)
 		elif cmd == CMD_VM_WALT_DEVS and self.phase is not None:
-			log(INFO, self.name()+".execute: CMD_VM_WALT_ADD_DEV")
+			log(INFO, self.get_name()+".execute: CMD_VM_WALT_ADD_DEV")
 			self.exec(self.cmd_vm_walt_devs)
 		elif cmd == CMD_VM_WALT_IPS and self.phase is not None:
-			log(INFO, self.name()+".execute: CMD_VM_WALT_DEV_IP")
+			log(INFO, self.get_name()+".execute: CMD_VM_WALT_DEV_IP")
 			self.exec(self.cmd_vm_walt_ips)
 		elif cmd == CMD_VM_WG_KEYGEN and self.phase is not None:
-			log(INFO, self.name()+".execute: CMD_VM_WG_KEYGEN")
+			log(INFO, self.get_name()+".execute: CMD_VM_WG_KEYGEN")
 			self.exec(self.cmd_vm_wg_keygen)
 		elif cmd == CMD_VM_WG_DOORS and self.phase is not None:
-			log(INFO, self.name()+".execute: CMD_VM_WG_DOORS")
+			log(INFO, self.get_name()+".execute: CMD_VM_WG_DOORS")
 			self.exec(self.cmd_vm_wg_doors)
 		elif cmd == CMD_VM_WG_UP and self.phase is not None:
-			log(INFO, self.name()+".execute: CMD_VM_WG_UP")
+			log(INFO, self.get_name()+".execute: CMD_VM_WG_UP")
 			self.exec(self.cmd_vm_wg_up)
 		elif cmd == CMD_VM_WG_DOWN and self.phase is not None:
-			log(INFO, self.name()+".execute: CMD_VM_WG_DOWN")
+			log(INFO, self.get_name()+".execute: CMD_VM_WG_DOWN")
 			self.exec(self.cmd_vm_wg_down)
 		elif cmd == CMD_VM_COMMIT and self.phase is not None:
-			log(INFO, self.name()+".execute: CMD_VM_COMMIT")
+			log(INFO, self.get_name()+".execute: CMD_VM_COMMIT")
 			self.exec(self.cmd_vm_commit)
 		elif cmd == CMD_VM_SHUTDOWN:
-			log(INFO, self.name()+".execute: CMD_VM_SHUTDOWN")
+			log(INFO, self.get_name()+".execute: CMD_VM_SHUTDOWN")
 			self.exec(self.cmd_vm_shutdown)
 		elif cmd == CMD_VM_LIVE:
 			self.socket.send_obj({"success": True})
 		else:
-			log(ERROR, self.name()+".execute: Received invalid command")
+			log(ERROR, self.get_name()+".execute: Received invalid command")
 			self.socket.send_obj({"success": True, ERROR: ["unsupported operation"]})
 
 
@@ -94,20 +94,20 @@ class VMController(Controller):
 	def cmd_vm_phase(self):
 		self.phase = self.socket.recv_obj()
 		if not isinstance(self.phase, int) or self.phase not in [COMMIT_PHASE, RUN_PHASE, DEBUG_PHASE]:
-			log(ERROR, self.name()+".cmd_vm_phase: invalid phase")
+			log(ERROR, self.get_name()+".cmd_vm_phase: invalid phase")
 			return {"success": False, ERROR: ["invalid phase type"]}
 		if self.phase == RUN_PHASE:
 			glob.SERVER.WALT_CONTROLLER.load_devices()
 		elif self.phase == DEBUG_PHASE:
-			log(INFO, self.name()+".cmd_vm_phase: the VM was started in DEBUG phase. The daemon will stop")
+			log(INFO, self.get_name()+".cmd_vm_phase: the VM was started in DEBUG phase. The daemon will stop")
 			self.keep_running = False
 		else:
-			log(INFO, self.name()+".cmd_vm_phase: Running in phase "+str(self.phase))
+			log(INFO, self.get_name()+".cmd_vm_phase: Running in phase "+str(self.phase))
 		return {"success": True}
 
 	def cmd_vm_walt_devs(self):
 		if self.phase != COMMIT_PHASE:
-			log(ERROR, self.name()+".cmd_vm_walt_devs: Received devices during run phase")
+			log(ERROR, self.get_name()+".cmd_vm_walt_devs: Received devices during run phase")
 			return {"success": False, ERROR: ["cannot add devices during run phase"]}
 		else:
 			devs = self.socket.recv_obj()
@@ -118,14 +118,14 @@ class VMController(Controller):
 
 	def cmd_vm_wg_keygen(self):
 		if self.phase != COMMIT_PHASE:
-			log(WARNING, self.name()+".cmd_wg_keygen: keys can only be generated during commit phase")
+			log(WARNING, self.get_name()+".cmd_wg_keygen: keys can only be generated during commit phase")
 			return {"success": False, ERROR: ["keys can only be generated during commit phase"]}
 		else:
 			return glob.SERVER.WIREGUARD_CONTROLLER.keygen()
 
 	def cmd_vm_wg_doors(self):
 		if self.phase != COMMIT_PHASE:
-			log(WARNING, self.name()+".cmd_wg_doors: doors can only be received during commit phase")
+			log(WARNING, self.get_name()+".cmd_wg_doors: doors can only be received during commit phase")
 			return {"success": False, ERROR: ["doors can only be received during commit phase"]}
 		else:
 			# Receive public keys
@@ -134,7 +134,7 @@ class VMController(Controller):
 
 	def cmd_vm_wg_up(self):
 		if self.phase != RUN_PHASE:
-			log(ERROR, self.name()+".cmd_vm_wg_up: cannot setup wireguard during run phase")
+			log(ERROR, self.get_name()+".cmd_vm_wg_up: cannot setup wireguard during run phase")
 			return {"success": False, ERROR: ["cannot setup wireguard during run phase"]}
 		return glob.SERVER.WIREGUARD_CONTROLLER.up()
 
@@ -143,7 +143,7 @@ class VMController(Controller):
 
 	def cmd_vm_commit(self):
 		if self.phase != COMMIT_PHASE:
-			log(ERROR, self.name()+".cmd_vm_commit: cannot commit in run phase")
+			log(ERROR, self.get_name()+".cmd_vm_commit: cannot commit in run phase")
 			return {"success": False, ERROR: ["cannot commit in run phase"]}
 		else:
 			glob.SERVER.WALT_CONTROLLER.dump_devices()
@@ -151,4 +151,4 @@ class VMController(Controller):
 
 	def cmd_vm_shutdown(self):
 		if not run("init 0"):
-			log(WARNING, self.name()+".cmd_vm_shutdown: Failed to shutdown the VM")
+			log(WARNING, self.get_name()+".cmd_vm_shutdown: Failed to shutdown the VM")

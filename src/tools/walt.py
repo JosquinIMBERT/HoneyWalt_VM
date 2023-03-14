@@ -11,12 +11,16 @@ import glob
 class WaltController:
 	def __init__(self):
 		glob.DEVS = []
+		self.name = None
 
 	def __del__(self):
 		del glob.DEVS
 
-	def name(self):
-		return self.__class__.__name__
+	def get_name(self):
+		return self.__class__.__name__if self.name is None else self.name
+
+	def set_name(self, name):
+		self.name = name
 
 	def load_devices(self):
 		with open(to_root_path("etc/honeywalt_vm.cfg"), "r") as conf_file:
@@ -34,7 +38,7 @@ class WaltController:
 
 		for dev in devices:
 			if not find(waltapi.nodes, dev["mac"], "mac"):
-				log(WARNING, self.name()+".receive_devices: unknown device ("+dev["mac"]+")")
+				log(WARNING, self.get_name()+".receive_devices: unknown device ("+dev["mac"]+")")
 				res[WARNING] += ["unknown device ("+dev["mac"]+")"]
 				fails += 1
 				continue
@@ -45,7 +49,7 @@ class WaltController:
 				# try:
 				# 	waltapi.images.clone(dev["image"])
 				# except:
-				# 	log(WARNING, self.name()+".receive_devices: image "+dev["image"]+" not found")
+				# 	log(WARNING, self.get_name()+".receive_devices: image "+dev["image"]+" not found")
 				# 	res[WARNING] += ["image "+dev["image"]+" not found"]
 				# 	fails += 1
 				#	continue

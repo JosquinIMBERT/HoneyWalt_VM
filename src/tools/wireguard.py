@@ -12,7 +12,7 @@ WG_PEER_IP = "192.168."
 
 class WireguardController:
 	def __init__(self):
-		pass
+		self.name = None
 
 	def __del__(self):
 		pass
@@ -23,8 +23,11 @@ class WireguardController:
 	def generate_iface(self, dev_id):
 		return 'wg-cli-'+dev_id
 
-	def name(self):
-		return self.__class__.__name__
+	def get_name(self):
+		return self.__class__.__name__ if self.name is None else self.name
+
+	def set_name(self, name):
+		self.name = name
 
 	def keygen(self):
 		keys = []
@@ -38,7 +41,7 @@ class WireguardController:
 
 	def receive_doors(self, doors):
 		if len(doors) != len(glob.DEVS):
-			log(ERROR, self.name()+".cmd_wg_doors: the number of doors did not match the number of devices")
+			log(ERROR, self.get_name()+".cmd_wg_doors: the number of doors did not match the number of devices")
 			return {"success": False, ERROR: ["the number of doors did not match the number of devices"]}
 		else:
 			for door in doors:
