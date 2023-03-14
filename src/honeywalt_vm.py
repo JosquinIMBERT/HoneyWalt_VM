@@ -1,8 +1,9 @@
 # External
-import os, signal, sys
+import argparse, os, signal, sys
 
 # Internal
 #sys.path[0] = os.path.join(os.environ["HONEYWALT_VM_HOME"],"src/")
+from common.utils.logs import *
 import glob
 from tools.vm import VMController
 from tools.walt import WaltController
@@ -28,5 +29,13 @@ class VMServer:
 		self.VM_CONTROLLER.run()
 
 if __name__ == '__main__':
+	parser = argparse.ArgumentParser(description='HoneyWalt VM Daemon')
+	parser.add_argument("-l", "--log-level", nargs=1, help="Set log level (COMMAND, DEBUG, INFO, WARNING, ERROR, FATAL)")
+
+	options = parser.parse_args()
+	if options.log_level is not None:
+		log_level = options.log_level[0]
+		set_log_level(log_level)
+
 	vm_server = VMServer()
 	vm_server.start()
