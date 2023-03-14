@@ -21,11 +21,11 @@ class VMServer:
 		signal.signal(signal.SIGINT, handle) # handle ctrl-C
 
 	def stop(self):
-		glob.VM_CONTROLLER.stop()
+		self.VM_CONTROLLER.stop()
 
 	def start(self):
-		glob.VM_CONTROLLER.connect()
-		glob.VM_CONTROLLER.run()
+		self.VM_CONTROLLER.connect()
+		self.VM_CONTROLLER.run()
 
 if __name__ == '__main__':
 	vm_server = VMServer()
