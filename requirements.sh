@@ -1,7 +1,17 @@
 #!/bin/bash
 
-# Dependencies
-pip3 install python_wireguard
+install() {
+	package_name=$1
+	install_name=$2
+	if ! { echo "$(pip3 list)" | grep -q "^${package_name}"; }; then
+		echo "Installing ${package_name}"
+		pip3 install ${install_name}
+	else
+		echo "Package ${package_name} already installed"
+	fi
+}
+
+install "python-wireguard" "python_wireguard"
 
 # Adding environment variable
 dir=$(dirname $0)
