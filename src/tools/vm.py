@@ -1,5 +1,5 @@
 # External
-import socket
+import socket, time
 
 # Internal
 from common.utils.controller import Controller
@@ -29,7 +29,7 @@ class VMController(Controller):
 	#  CONTROL LOOP #
 	#################
 
-	def run(self):
+	def run(self, sleep=3):
 		self.keep_running = True
 		while self.keep_running:
 			if self.connect():
@@ -42,6 +42,8 @@ class VMController(Controller):
 						self.execute(cmd)
 				if disconnected:
 					log(INFO, self.name()+".run: disconnected")
+			else:
+				time.sleep(sleep)
 
 
 	#################
