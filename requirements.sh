@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Dependencies
+pip3 install python_wireguard
+
 # Adding environment variable
 dir=$(dirname $0)
 home=$(realpath ${dir})
