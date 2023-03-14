@@ -19,6 +19,7 @@ class VMController(Controller):
 		del self.socket
 
 	def connect(self):
+		log(DEBUG, self.name()+".connect: connecting to the HoneyWalt_controller")
 		return self.socket.connect(socket.VMADDR_CID_HOST, CONTROL_PORT)
 
 	def stop(self):

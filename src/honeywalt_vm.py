@@ -15,17 +15,22 @@ def handle(signum, frame):
 class VMServer:
 	"""VMServer"""
 	def __init__(self):
+		log(DEBUG, "VMServer.__init__: initializing global variables")
 		glob.init(self)
+		log(DEBUG, "VMServer.__init__: initializing VM controller")
 		self.VM_CONTROLLER = VMController()
+		log(DEBUG, "VMServer.__init__: initializing WalT controller")
 		self.WALT_CONTROLLER = WaltController()
+		log(DEBUG, "VMServer.__init__: initializing Wireguard controller")
 		self.WIREGUARD_CONTROLLER = WireguardController()
 		signal.signal(signal.SIGINT, handle) # handle ctrl-C
 
 	def stop(self):
+		log(DEBUG, "VMServer.stop: stopping VM controller")
 		self.VM_CONTROLLER.stop()
 
 	def start(self):
-		self.VM_CONTROLLER.connect()
+		log(DEBUG, "VMServer.start: running VM controller")
 		self.VM_CONTROLLER.run()
 
 if __name__ == '__main__':
