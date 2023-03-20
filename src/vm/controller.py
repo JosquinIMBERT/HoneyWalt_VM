@@ -11,6 +11,8 @@ import glob
 
 class VMController(Controller):
 	def __init__(self):
+		Controller.__init__(self)
+		log(INFO, self.get_name()+".__init__: creating VMController")
 		self.socket = ClientSocket(socktype=socket.AF_VSOCK)
 		self.socket.set_name("Socket(VM-Controller)")
 		self.keep_running = False
