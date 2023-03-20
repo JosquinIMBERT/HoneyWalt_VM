@@ -17,7 +17,7 @@ class WaltController:
 		del glob.DEVS
 
 	def get_name(self):
-		return self.__class__.__name__if self.name is None else self.name
+		return self.__class__.__name__ if self.name is None else self.name
 
 	def set_name(self, name):
 		self.name = name
