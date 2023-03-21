@@ -78,8 +78,9 @@ class WaltController:
 				with open("run/walt/docker/"+dev["name"]+"/Dockerfile", "w") as docker_file:
 					docker_file.write(content)
 				api.images.build(dev["name"], to_root_path("run/walt/docker/"+dev["name"]+"/"))
-			except:
+			except Exception as e:
 				log(WARNING, self.get_name()+".receive_devices: failed to add the user for dev "+dev["name"])
+				log(ERROR, e)
 				res[WARNING] += ["failed to add the user for dev "+dev["name"]]
 				fails += 1
 				continue
