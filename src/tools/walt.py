@@ -65,7 +65,7 @@ class WaltController:
 			with open(to_root_path("var/template/Dockerfile.template"), "r") as template_file:
 				template = Template(template_file.read())
 			params = {
-				'image': img["fullname"],
+				'image': img.fullname,
 				'user': dev["username"],
 				'pass': dev["password"]
 			}
