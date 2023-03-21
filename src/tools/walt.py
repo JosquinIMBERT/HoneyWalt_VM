@@ -81,7 +81,7 @@ class WaltController:
 			except:
 				log(WARNING, self.get_name()+".receive_devices: failed to add the user for dev "+dev["image"])
 				res[WARNING] += ["failed to add the user for dev "+dev["image"]]
-				fail += 1
+				fails += 1
 				continue
 
 			# Rename the device if necessary
