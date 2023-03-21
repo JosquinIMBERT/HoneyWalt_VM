@@ -73,9 +73,9 @@ class WaltController:
 			
 			# Create the Docker directory and add its content
 			try:
-				os.mkdir(to_root_path("run/walt/docker/"+dev["name"]))
+				os.makedirs(to_root_path("run/walt/docker/"+dev["name"]), exist_ok=True)
 				shutil.copy(to_root_path("var/useradd.sh"), to_root_path("run/walt/docker/"+dev["name"]+"/"))
-				with open("run/walt/docker/"+dev["name"]+"/Dockerfile", "w+") as docker_file:
+				with open(to_root_path("run/walt/docker/"+dev["name"]+"/Dockerfile"), "w+") as docker_file:
 					docker_file.write(content)
 				api.images.build(dev["name"], to_root_path("run/walt/docker/"+dev["name"]+"/"))
 			except Exception as e:
