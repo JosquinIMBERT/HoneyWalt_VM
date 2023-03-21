@@ -35,7 +35,9 @@ class WireguardController:
 		for dev in glob.DEVS:
 			# Generate new keys
 			dev["wg_privkey"], dev["wg_pubkey"] = Key.key_pair()
-			keys += [ {"dev_id":dev["id"], "pubkey":dev["wg_pubkey"]} ]
+			dev["wg_privkey"] = str(dev["wg_privkey"])
+			dev["wg_pubkey"]  = str(dev["wg_pubkey"])
+			keys += [ {"dev_id":dev["id"], "pubkey":str(dev["wg_pubkey"])} ]
 
 		return {"success": True, "answer": keys}
 
