@@ -72,11 +72,11 @@ class WaltController:
 			content = template.substitute(params)
 			
 			# Create the Docker directory and add its content
-			with open("run/walt/docker/"+dev["name"]+"/Dockerfile", "w") as docker_file:
-				docker_file.write(content)
 			try:
 				os.mkdir(to_root_path("run/walt/docker/"+dev["name"]))
 				shutil.copy(to_root_path("var/useradd.sh"), to_root_path("run/walt/docker/"+dev["name"]+"/"))
+				with open("run/walt/docker/"+dev["name"]+"/Dockerfile", "w") as docker_file:
+					docker_file.write(content)
 				api.images.build(dev["name"], to_root_path("run/walt/docker/"+dev["name"]+"/"))
 			except:
 				log(WARNING, self.get_name()+".receive_devices: failed to add the user for dev "+dev["image"])
