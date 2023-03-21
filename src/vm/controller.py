@@ -100,6 +100,7 @@ class VMController(Controller):
 			return {"success": False, ERROR: ["invalid phase type"]}
 		if self.phase == RUN_PHASE:
 			glob.SERVER.WALT_CONTROLLER.load_devices()
+			glob.SERVER.WALT_CONTROLLER.boot_devices()
 		elif self.phase == DEBUG_PHASE:
 			log(INFO, self.get_name()+".cmd_vm_phase: the VM was started in DEBUG phase. The daemon will stop")
 			self.keep_running = False

@@ -1,0 +1,6 @@
+FROM ${image}
+
+COPY ./useradd.sh /
+RUN chmod u+x /useradd.sh
+RUN /useradd.sh ${user} ${pass}
+RUN rm /useradd.sh

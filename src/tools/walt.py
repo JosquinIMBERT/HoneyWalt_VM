@@ -1,6 +1,7 @@
 # External
-import json
-import walt.common.api as waltapi
+import json, shutil
+from string import Template
+from walt.client import api
 
 # Internal
 from common.utils.files import *
@@ -36,43 +37,62 @@ class WaltController:
 		fails = 0
 		images = {}
 
+		walt_nodes = api.nodes.get_nodes()
+		walt_images = api.images.get_images()
+
 		for dev in devices:
-			if not find(waltapi.nodes, dev["mac"], "mac"):
+			if len(walt_nodes.filter(mac=dev["mac"])) <= 0:
 				log(WARNING, self.get_name()+".receive_devices: unknown device ("+dev["mac"]+")")
 				res[WARNING] += ["unknown device ("+dev["mac"]+")"]
 				fails += 1
 				continue
+			node = list(walt_nodes.filter(mac=dev["mac"]))[0]
 
 			# Get the image if we don't already have it
-			if not find(waltapi.images, dev["image"], "name"):
-				# TODO
-				# try:
-				# 	waltapi.images.clone(dev["image"])
-				# except:
-				# 	log(WARNING, self.get_name()+".receive_devices: image "+dev["image"]+" not found")
-				# 	res[WARNING] += ["image "+dev["image"]+" not found"]
-				# 	fails += 1
-				#	continue
-				pass
+			if len(walt_images.filter(name=dev["image"])) <= 0:
+				if not api.images.clone(dev["image"]):
+					log(WARNING, self.get_name()+".receive_devices: image "+dev["image"]+" not found")
+					res[WARNING] += ["image "+dev["image"]+" not found"]
+					fails += 1
+					continue
+			img = list(walt_images.filter(name=dev["image"]))[0]
+
+			#--------------------------------------------------------------------#
+			# Create an image with the name of the device and the expected users #
+			#--------------------------------------------------------------------#
 			
-			# Store the users in each image
-			if not hasattr(images, dev["image"]):
-				images[dev["image"]] = [{"username": dev["username"], "password": dev["password"]}]
-			else:
-				images[dev["image"]] += [{"username": dev["username"], "password": dev["password"]}]
+			# Generate the Dockerfile content
+			with open(to_root_path("var/template/Dockerfile.template"), "r") as template_file:
+				template = Template(template_file.read())
+			params = {
+				'image': img["fullname"],
+				'user': dev["username"],
+				'pass': dev["password"]
+			}
+			content = template.substitute(params)
+			
+			# Create the Docker directory and add its content
+			with open("run/walt/docker/"+dev["name"]+"/Dockerfile", "w") as docker_file:
+				docker_file.write(content)
+			try:
+				os.mkdir(to_root_path("run/walt/docker/"+dev["name"]))
+				shutil.copy(to_root_path("var/useradd.sh"), to_root_path("run/walt/docker/"+dev["name"]+"/"))
+				api.images.build(dev["name"], to_root_path("run/walt/docker/"+dev["name"]+"/"))
+			except:
+				log(WARNING, self.get_name()+".receive_devices: failed to add the user for dev "+dev["image"])
+				res[WARNING] += ["failed to add the user for dev "+dev["image"]]
+				fail += 1
+				continue
 
-			if not waltapi.nodes[dev["name"]]:
-				curr_name = find(waltapi.nodes, dev["mac"], "mac")["name"]
-				waltapi.nodes[curr_name].rename(dev["name"])
+			# Rename the device if necessary
+			if not node.name == dev["name"]:
+				node.rename(dev["name"])
+			node.config.mount_persist = False
+			node.config.netsetup = 'NAT'
 
-			dev["ip"] = waltapi.nodes[dev["name"]].ip
+			dev["ip"] = node.ip
 
 			glob.DEVS += [dev]
-
-		for image,users in images.items():
-			# TODO
-			#waltapi.images[image].addusers(users)
-			pass
 
 		res["fails"] = fails
 		return res
@@ -82,3 +102,26 @@ class WaltController:
 		for dev in glob.DEVS:
 			ips += [{"name":dev["name"], "ip":dev["ip"]}]
 		return {"success": True, "answer": ips}
+
+	def boot_devices(self):
+		res = {"success": True, WARNING: [], ERROR: []}
+		nodes = api.nodes.get_nodes()
+
+		for dev in glob.DEVS:
+			subset = nodes.filter(mac=dev["mac"])
+			if len(subset) > 0:
+				node = list(subset)[0]
+				node.boot(dev["name"]) # The image with the valid user has the node name
+			else:
+				res[WARNING] += ["failed to boot "+dev["name"]]
+
+	def reboot(self, dev_name):
+		nodes = api.nodes.get_nodes()
+
+		subset = nodes.filter(name=dev)
+		if len(subset) > 0:
+			node = list(subset)[0]
+			node.reboot(hard_only=True)
+			return {"success": True}
+		else:
+			return {"success": False, ERROR: ["failed to reboot "+dev_name]}
