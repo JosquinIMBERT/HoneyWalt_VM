@@ -102,13 +102,15 @@ class VMController(Controller):
 			log(ERROR, self.get_name()+".cmd_vm_phase: invalid phase")
 			return {"success": False, ERROR: ["invalid phase type"]}
 		if self.phase == RUN_PHASE:
-			glob.SERVER.WALT_CONTROLLER.load_devices()
 			glob.SERVER.WALT_CONTROLLER.boot_devices()
 		elif self.phase == DEBUG_PHASE:
 			log(INFO, self.get_name()+".cmd_vm_phase: the VM was started in DEBUG phase. The daemon will stop")
 			self.keep_running = False
-		else:
-			log(INFO, self.get_name()+".cmd_vm_phase: Running in phase "+str(self.phase))
+		elif self.phase == COMMIT_PHASE:
+			log(DEBUG, self.get_name()+".cmd_vm_phase: clearing images")
+			for dev in glob.DEVS:
+				glob.SERVER.WALT_CONTROLLER.remove_image(dev["name"])
+		log(INFO, self.get_name()+".cmd_vm_phase: Running in phase "+str(self.phase))
 		return {"success": True}
 
 	def cmd_vm_walt_devs(self):

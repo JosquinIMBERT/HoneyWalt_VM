@@ -30,6 +30,8 @@ class VMServer:
 		self.VM_CONTROLLER.stop()
 
 	def start(self):
+		log(DEBUG, "VMServer.start: loading devices")
+		glob.SERVER.WALT_CONTROLLER.load_devices()
 		log(DEBUG, "VMServer.start: running VM controller")
 		self.VM_CONTROLLER.run()
 
