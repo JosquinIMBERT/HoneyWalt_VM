@@ -11,7 +11,6 @@ import glob
 
 class WaltController:
 	def __init__(self):
-		glob.DEVS = []
 		self.name = None
 
 	def __del__(self):
@@ -133,6 +132,7 @@ class WaltController:
 	def reinit(self):
 		# Deleting images
 		log(INFO, "removing images")
+		log(DEBUG, "using previous configuration: ", glob.DEVS)
 		images = api.images.get_images()
 		for dev in glob.DEVS:
 			if dev["name"] in images:
