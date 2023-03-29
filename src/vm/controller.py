@@ -84,7 +84,8 @@ class VMController(Controller):
 			self.exec(self.cmd_vm_commit)
 		elif cmd == CMD_VM_SHUTDOWN:
 			log(INFO, self.get_name()+".execute: CMD_VM_SHUTDOWN")
-			self.exec(self.cmd_vm_shutdown)
+			self.socket.send_obj({"success": True})
+			self.cmd_vm_shutdown()
 		elif cmd == CMD_VM_LIVE:
 			self.socket.send_obj({"success": True})
 		else:
