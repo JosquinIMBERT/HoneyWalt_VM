@@ -31,6 +31,9 @@ class WaltController:
 		# Write the configuration file
 		with open(to_root_path("etc/honeywalt_vm.cfg"), "w") as conf_file:
 			conf_file.write(json.dumps(glob.DEVS, indent=4))
+			# We ensure the data is written to the file because the next operation will likely be a shutdown
+			conf_file.flush()
+			os.fsync(conf_file)
 
 	def receive_devices(self, devices):
 		res = {"success": True, WARNING: [], ERROR: []}
