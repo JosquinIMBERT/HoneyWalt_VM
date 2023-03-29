@@ -132,14 +132,17 @@ class WaltController:
 
 	def reinit(self):
 		# Deleting images
+		log(INFO, "removing images")
 		images = api.images.get_images()
 		for dev in glob.DEVS:
 			if dev["name"] in images:
-				log(DEBUG, "removing image "+str(dev["name"]))
 				images[dev["name"]].remove()
+				log(DEBUG, "image "+str(dev["name"])+" removed")
+			else:
+				log(DEBUG, "image "+str(dev["name"])+" not found")
 
 		# Restoring configuration
-		log(DEBUG, "restoring configuration")
+		log(INFO, "restoring configuration")
 		glob.DEVS = []
 		with open(to_root_path("etc/honeywalt_vm.cfg"), "w") as conf_file:
 			conf_file.write(json.dumps(glob.DEVS, indent=4))
