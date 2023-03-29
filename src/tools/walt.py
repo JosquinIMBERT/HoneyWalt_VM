@@ -130,8 +130,18 @@ class WaltController:
 		else:
 			return {"success": False, ERROR: ["failed to reboot "+dev_name]}
 
-	def remove_images(self):
+	def reinit(self):
+		# Deleting images
 		images = api.images.get_images()
 		for dev in glob.DEVS:
 			if dev["name"] in images:
+				log(DEBUG, "removing image "+str(dev["name"]))
 				images[dev["name"]].remove()
+
+		# Restoring configuration
+		log(DEBUG, "restoring configuration")
+		glob.DEVS = []
+		with open(to_root_path("etc/honeywalt_vm.cfg"), "w") as conf_file:
+			conf_file.write(json.dumps(glob.DEVS, indent=4))
+			conf_file.flush()
+			os.fsync(conf_file)

@@ -108,7 +108,7 @@ class VMController(Controller):
 			self.keep_running = False
 		elif self.phase == COMMIT_PHASE:
 			log(DEBUG, self.get_name()+".cmd_vm_phase: clearing images")
-			glob.SERVER.WALT_CONTROLLER.remove_images()
+			glob.SERVER.WALT_CONTROLLER.reinit()
 		log(INFO, self.get_name()+".cmd_vm_phase: Running in phase "+str(self.phase))
 		return {"success": True}
 
