@@ -130,7 +130,8 @@ class WaltController:
 		else:
 			return {"success": False, ERROR: ["failed to reboot "+dev_name]}
 
-	def remove_image(self, name):
+	def remove_images(self):
 		images = api.images.get_images()
-		if name in images:
-			images[name].remove()
+		for dev in glob.DEVS:
+			if dev["name"] in images:
+				images[dev["name"]].remove()
