@@ -78,14 +78,14 @@ class WireguardController:
 
 	def post_up(self, ip, table):
 		# TODO: find how to replace table or to give the wg interface a table id
-		if not run("ip -4 rule add from "+ip+" table "+table):
+		if not run("ip -4 rule add from "+str(ip)+" table "+str(table)):
 			log(ERROR, "WireguardController.post_up: failed to start redirection of packets to wireguard")
 			return {"success": False, ERROR: ["failed to start redirection of packets to wireguard"]}
 		return {"success": True}
 
 	def pre_down(self, ip, table):
 		# TODO: find how to replace table or to give the wg interface a table id
-		if not run("ip -4 rule del from "+ip+" table "+table):
+		if not run("ip -4 rule del from "+str(ip)+" table "+str(table)):
 			log(ERROR, "WireguardController.pre_down: failed to start redirection of packets to wireguard")
 			return {"success": False, ERROR: ["failed to start redirection of packets to wireguard"]}
 		return {"success": True}
