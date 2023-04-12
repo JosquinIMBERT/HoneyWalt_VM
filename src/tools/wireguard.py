@@ -21,7 +21,7 @@ class WireguardController:
 		return WG_PEER_IP+str(dev_id//255)+"."+str((dev_id%255)+1)
 
 	def generate_iface(self, dev_id):
-		return 'wg-cli-'+dev_id
+		return 'wg-cli-'+str(dev_id)
 
 	def get_name(self):
 		return self.__class__.__name__ if self.name is None else self.name
