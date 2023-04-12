@@ -103,7 +103,7 @@ class WaltController:
 	def get_ips(self):
 		ips = []
 		for dev in glob.DEVS:
-			ips += [{"name":dev["name"], "ip":dev["ip"]}]
+			ips += [{"name":dev["name"], "ip":dev["ip"], "id":dev["id"]}]
 		return {"success": True, "answer": ips}
 
 	def boot_devices(self):
