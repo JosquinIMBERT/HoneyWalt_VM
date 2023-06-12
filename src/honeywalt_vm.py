@@ -6,7 +6,8 @@ import argparse, os, signal, sys
 from common.utils.logs import *
 import glob
 from tools.walt import WaltController
-from tools.wireguard import WireguardController
+#from tools.wireguard import WireguardController
+from tools.wg import WireguardController
 from vm.controller import VMController
 
 def handle(signum, frame):

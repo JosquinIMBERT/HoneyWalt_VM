@@ -1,3 +1,7 @@
+# This Wireguard library does not work, since we need to set the
+# wireguard interface's table number but the python_wireguard library
+# does ot implement this functionnality 
+
 # External
 from python_wireguard import Client, Key, ServerConnection
 
