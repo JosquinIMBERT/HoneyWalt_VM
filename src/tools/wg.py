@@ -11,7 +11,7 @@ import glob
 
 global WG_PEER_IP, WG_PEER_MASK, CONF_PATH
 WG_PEER_IP   = "192.168."
-WG_PEER_MASK = "16"
+WG_PEER_MASK = "24"
 CONF_PATH	 = "/etc/wireguard/"
 
 class WireguardController:
@@ -22,7 +22,12 @@ class WireguardController:
 		pass
 
 	def generate_ip(self, dev_id):
-		return WG_PEER_IP+str(dev_id//255)+"."+str((dev_id%255)+1)
+		if WG_PEER_MASK == "16":
+			return WG_PEER_IP+str(dev_id//255)+"."+str((dev_id%255)+1)
+		elif WG_PEER_MASK=="24":
+			return WG_PEER_IP+"0."+str((dev_id%255)+1)
+		else:
+			return None
 
 	def generate_iface(self, dev_id):
 		return 'wg-cli-'+str(dev_id)
