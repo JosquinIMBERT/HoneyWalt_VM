@@ -6,4 +6,4 @@ RUN /useradd.sh ${user} ${pass}
 RUN rm /useradd.sh
 RUN touch /etc/ssh/sshd_config
 RUN sed -i "s/.*PermitRootLogin.*/PermitRootLogin yes/g" /etc/ssh/sshd_config
-RUN apt update; apt install -y wget curl ftp tftp; exit 0;
+RUN apt update -y; apt install -y wget curl ftp tftp; exit 0;
