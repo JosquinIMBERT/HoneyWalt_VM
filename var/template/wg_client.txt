@@ -1,5 +1,5 @@
 [Interface]
-MTU = 1400
+MTU = 1200
 Table = ${table}
 Address = ${ip}/${mask}
 PrivateKey = ${vm_privkey}
