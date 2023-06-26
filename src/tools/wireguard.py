@@ -11,10 +11,12 @@ from common.utils.misc import *
 from common.utils.system import *
 import glob
 
-global WG_PEER_IP
-WG_PEER_IP = "192.168."
-
 class WireguardController:
+
+	CONTROLLER_IP = "10.0.0.1"
+	WG_PEER_IP = "192.168."
+	WG_PORTS = 6000
+
 	def __init__(self):
 		self.name = None
 
@@ -22,7 +24,7 @@ class WireguardController:
 		pass
 
 	def generate_ip(self, dev_id):
-		return WG_PEER_IP+str(dev_id//255)+"."+str((dev_id%255)+1)
+		return WireguardController.WG_PEER_IP+str(dev_id//255)+"."+str((dev_id%255)+1)
 
 	def generate_iface(self, dev_id):
 		return 'wg-cli-'+str(dev_id)
@@ -41,7 +43,7 @@ class WireguardController:
 			dev["wg_privkey"], dev["wg_pubkey"] = Key.key_pair()
 			dev["wg_privkey"] = str(dev["wg_privkey"])
 			dev["wg_pubkey"]  = str(dev["wg_pubkey"])
-			keys += [ {"dev_id":dev["id"], "pubkey":str(dev["wg_pubkey"])} ]
+			keys += [ {"id":dev["id"], "pubkey":str(dev["wg_pubkey"])} ]
 
 		return {"success": True, "answer": keys}
 
@@ -51,10 +53,10 @@ class WireguardController:
 			return {"success": False, ERROR: ["the number of doors did not match the number of devices"]}
 		else:
 			for door in doors:
-				dev = find(glob.DEVS, door["dev_id"], "id")
-				dev["door_ip"] = door["ip"]
-				dev["door_port"] = door["port"]
-				dev["door_wg_pubkey"] = door["wg_pubkey"]
+				dev = find(glob.DEVS, door["id"], "id")
+				dev["door_ip"] = WireguardController.CONTROLLER_IP
+				dev["door_port"] = WireguardController.WG_PORTS + door["id"]
+				dev["door_wg_pubkey"] = door["pubkey"]
 			return {"success": True}
 
 	def up(self):
