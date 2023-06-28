@@ -51,13 +51,13 @@ class WaltController:
 			node = list(walt_nodes.filter(mac=dev["mac"]))[0]
 
 			# Get the image if we don't already have it
-			if len(walt_images.filter(name=dev["image"])) <= 0:
+			if len(walt_images.filter(name=dev["short_image"])) <= 0:
 				if not api.images.clone(dev["image"]):
 					log(WARNING, self.get_name()+".receive_devices: image "+dev["image"]+" not found")
 					res[WARNING] += ["image "+dev["image"]+" not found"]
 					fails += 1
 					continue
-			img = list(walt_images.filter(name=dev["image"]))[0]
+			img = list(walt_images.filter(name=dev["short_image"]))[0]
 
 			#--------------------------------------------------------------------#
 			# Create an image with the name of the device and the expected users #
