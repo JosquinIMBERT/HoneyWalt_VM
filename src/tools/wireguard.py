@@ -1,30 +1,38 @@
-# This Wireguard library does not work, since we need to set the
-# wireguard interface's table number but the python_wireguard library
-# does ot implement this functionnality 
-
 # External
 from python_wireguard import Client, Key, ServerConnection
+from string import Template
+import os
 
 # Internal
 from common.utils.logs import *
 from common.utils.misc import *
 from common.utils.system import *
-import glob
+
+global WG_PEER_IP, WG_PEER_MASK, CONF_PATH
+WG_PEER_IP   = "192.168."
+WG_PEER_MASK = "24"
+CONF_PATH	 = "/etc/wireguard/"
 
 class WireguardController:
 
-	CONTROLLER_IP = "10.0.0.1"
-	WG_PEER_IP = "192.168."
-	WG_PORTS = 6000
+	ENDPOINT_HOST = "10.0.0.1"
+	ENDPOINT_PORT = 6000
 
-	def __init__(self):
+	def __init__(self, server):
+		log(INFO, "WireguardController.__init__: creating the WireguardController")
+		self.server = server
 		self.name = None
 
 	def __del__(self):
 		pass
 
 	def generate_ip(self, dev_id):
-		return WireguardController.WG_PEER_IP+str(dev_id//255)+"."+str((dev_id%255)+1)
+		if WG_PEER_MASK == "16":
+			return WG_PEER_IP+str(dev_id//255)+"."+str((dev_id%255)+1)
+		elif WG_PEER_MASK=="24":
+			return WG_PEER_IP+"0."+str((dev_id%255)+1)
+		else:
+			return None
 
 	def generate_iface(self, dev_id):
 		return 'wg-cli-'+str(dev_id)
@@ -38,77 +46,77 @@ class WireguardController:
 	def keygen(self):
 		keys = []
 
-		for dev in glob.DEVS:
+		for honeypot in self.server.config:
 			# Generate new keys
-			dev["wg_privkey"], dev["wg_pubkey"] = Key.key_pair()
-			dev["wg_privkey"] = str(dev["wg_privkey"])
-			dev["wg_pubkey"]  = str(dev["wg_pubkey"])
-			keys += [ {"id":dev["id"], "pubkey":str(dev["wg_pubkey"])} ]
+			honeypot["privkey"], honeypot["pubkey"] = Key.key_pair()
+			honeypot["privkey"] = str(honeypot["privkey"])
+			honeypot["pubkey"]  = str(honeypot["pubkey"])
+			keys += [ {"id":honeypot["id"], "pubkey":str(honeypot["pubkey"])} ]
 
 		return {"success": True, "answer": keys}
 
-	def receive_doors(self, doors):
-		if len(doors) != len(glob.DEVS):
-			log(ERROR, self.get_name()+".cmd_wg_doors: the number of doors did not match the number of devices")
-			return {"success": False, ERROR: ["the number of doors did not match the number of devices"]}
-		else:
-			for door in doors:
-				dev = find(glob.DEVS, door["id"], "id")
-				dev["door_ip"] = WireguardController.CONTROLLER_IP
-				dev["door_port"] = WireguardController.WG_PORTS + door["id"]
-				dev["door_wg_pubkey"] = door["pubkey"]
-			return {"success": True}
+	def door_ip(self):
+		return WireguardController.ENDPOINT_HOST
+
+	def door_port(self, ident):
+		return WireguardController.ENDPOINT_PORT + int(ident)
 
 	def up(self):
 		res = {"success": True, ERROR: [], WARNING: []}
-		for dev in glob.DEVS:
-			iface = self.generate_iface(dev["id"])
-			cli_key = Key(dev["wg_privkey"])
-			cli_ip = self.generate_ip(dev["id"])
-			client = Client(iface, cli_key, cli_ip)
 
-			srv_key = Key(dev["door_wg_pubkey"])
-			endpoint = dev["door_ip"]
-			port = dev["door_port"]
-			server_conn = ServerConnection(srv_key, endpoint, port)
+		# Reading Wireguard interface configuration file template
+		with open(to_root_path("var/template/wg_client.txt"), "r") as temp_file:
+			template = Template(temp_file.read())
 
-			client.set_server(server_conn)
-			client.connect()
+		# Removing old configuration files
+		for old_conf_file in os.listdir(CONF_PATH):
+			os.remove(os.path.join(CONF_PATH, old_conf_file))
 
-			post_res = self.post_up(dev["ip"], dev["door_port"])
-			if not post_res["success"]:
-				if hasattr(post_res, WARNING): res[WARNING] += post_res[WARNING]
-				if hasattr(post_res, ERROR): res[ERROR] += post_res[ERROR]
+		for honeypot in self.server.config:
+			iface = self.generate_iface(honeypot["id"])
+			vpn_ip = self.generate_ip(honeypot["id"])
+			conf_filename = os.path.join(CONF_PATH, iface+".conf")
+
+			# Creating configuration
+			config = template.substitute({
+				"table": honeypot["door"]["port"], # Table takes the same value as the port
+				"ip": vpn_ip,
+				"mask": WG_PEER_MASK,
+				"vm_privkey": honeypot["privkey"],
+				"dev_ip": honeypot["device"]["ip"],
+				"server_pubkey": honeypot["door"]["pubkey"],
+				"server_ip": honeypot["door"]["ip"],
+				"server_port": honeypot["door"]["port"]
+			})
+
+			# Writing the configuration file
+			with open(conf_filename, "w") as conf_file:
+				conf_file.write(config)
+
+			# Run 'wg-quick up'
+			cmd = "wg-quick up "+conf_filename
+			run(cmd)
 
 		return res
-
-	def post_up(self, ip, table):
-		# TODO: find how to replace table or to give the wg interface a table id
-		if not run("ip -4 rule add from "+str(ip)+" table "+str(table)):
-			log(ERROR, "WireguardController.post_up: failed to start redirection of packets to wireguard")
-			return {"success": False, ERROR: ["failed to start redirection of packets to wireguard"]}
-		return {"success": True}
-
-	def pre_down(self, ip, table):
-		# TODO: find how to replace table or to give the wg interface a table id
-		if not run("ip -4 rule del from "+str(ip)+" table "+str(table)):
-			log(ERROR, "WireguardController.pre_down: failed to start redirection of packets to wireguard")
-			return {"success": False, ERROR: ["failed to start redirection of packets to wireguard"]}
-		return {"success": True}
 
 	def down(self):
 		res = {"success": True, ERROR: [], WARNING: []}
-		for dev in glob.DEVS:
-			if not self.is_up(dev["id"]):
+		
+		for honeypot in self.server.config:
+			iface = self.generate_iface(honeypot["id"])
+			conf_filename = os.path.join(CONF_PATH, iface+".conf")
+
+			if not self.is_up(iface):
 				continue
 			else:
-				pre_res = self.pre_down()
-				if not pre_res["success"]:
-					if hasattr(post_res, WARNING): res[WARNING] += post_res[WARNING]
-					if hasattr(post_res, ERROR): res[ERROR] += post_res[ERROR]
+				# Run 'wg-quick down'
+				cmd = "wg-quick down "+conf_filename
+				run(cmd)
 
-				iface = self.generate_iface(dev["id"])
-				cli_key = Key(dev["wg_privkey"])
-				cli_ip = self.generate_ip(dev["id"])
-				Client(iface, cli_key, cli_ip).delete_interface()
 		return res
+
+	def is_up(self, name):
+		# The wireguard library does not allow to check which devices are up
+		# (Note: there is a wireguard.list_devices function but it prints the result to stdout instead of returning it)
+		res = run("wg show interfaces", output=True)
+		return name in res.split()

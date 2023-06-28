@@ -7,14 +7,15 @@ from walt.client import api
 from common.utils.files import *
 from common.utils.logs import *
 from common.utils.misc import *
-import glob
 
 class WaltController:
-	def __init__(self):
+	def __init__(self, server):
+		log(INFO, "WaltController.__init__: creating the WaltController")
+		self.server = server
 		self.name = None
 
 	def __del__(self):
-		del glob.DEVS
+		del self.server.config
 
 	def get_name(self):
 		return self.__class__.__name__ if self.name is None else self.name
@@ -22,106 +23,71 @@ class WaltController:
 	def set_name(self, name):
 		self.name = name
 
-	def load_devices(self):
-		with open(to_root_path("etc/honeywalt_vm.cfg"), "r") as conf_file:
-			glob.DEVS = json.load(conf_file)
-
-	def dump_devices(self):
-		# Write the configuration file
-		with open(to_root_path("etc/honeywalt_vm.cfg"), "w") as conf_file:
-			conf_file.write(json.dumps(glob.DEVS, indent=4))
-			# We ensure the data is written to the file because the next operation will likely be a shutdown
-			conf_file.flush()
-			os.fsync(conf_file)
-
-	def receive_devices(self, devices):
-		res = {"success": True, WARNING: [], ERROR: []}
-		fails = 0
-		images = {}
-
+	def find_device(self, mac):
 		walt_nodes = api.nodes.get_nodes()
+		if len(walt_nodes.filter(mac=mac)) <= 0:
+			return None
+		return list(walt_nodes.filter(mac=mac))[0]
+
+	def configure_device(self, dev, name):
+		if not dev.name == name:
+			dev.rename(name)
+		dev.config.mount_persist = False
+		dev.config.netsetup = 'NAT'
+
+	def find_image(self, name, short_name):
 		walt_images = api.images.get_images()
+		if len(walt_images.filter(name=short_name)) <= 0:
+			if not api.images.clone(name):
+				return None
+		return list(walt_images.filter(name=short_name))[0]
 
-		for dev in devices:
-			if len(walt_nodes.filter(mac=dev["mac"])) <= 0:
-				log(WARNING, self.get_name()+".receive_devices: unknown device ("+dev["mac"]+")")
-				res[WARNING] += ["unknown device ("+dev["mac"]+")"]
-				fails += 1
-				continue
-			node = list(walt_nodes.filter(mac=dev["mac"]))[0]
+	def create_honeypot_image(self, dev_name, img, username, password):
+		# Generate the Dockerfile content
+		with open(to_root_path("var/template/Dockerfile.template"), "r") as template_file:
+			template = Template(template_file.read())
+		params = {
+			'image': img.fullname,
+			'user': username,
+			'pass': password
+		}
+		content = template.substitute(params)
+		
+		# Create the Docker directory and add its content
+		try:
+			os.makedirs(to_root_path("run/walt/docker/"+dev_name), exist_ok=True)
+			shutil.copy(to_root_path("var/useradd.sh"), to_root_path("run/walt/docker/"+dev_name+"/"))
+			with open(to_root_path("run/walt/docker/"+dev_name+"/Dockerfile"), "w+") as docker_file:
+				docker_file.write(content)
+			api.images.build(dev_name, to_root_path("run/walt/docker/"+dev_name+"/"))
+		except Exception as e:
+			return None
 
-			# Get the image if we don't already have it
-			if len(walt_images.filter(name=dev["short_image"])) <= 0:
-				if not api.images.clone(dev["image"]):
-					log(WARNING, self.get_name()+".receive_devices: image "+dev["image"]+" not found")
-					res[WARNING] += ["image "+dev["image"]+" not found"]
-					fails += 1
-					continue
-			img = list(walt_images.filter(name=dev["short_image"]))[0]
-
-			#--------------------------------------------------------------------#
-			# Create an image with the name of the device and the expected users #
-			#--------------------------------------------------------------------#
-			
-			# Generate the Dockerfile content
-			with open(to_root_path("var/template/Dockerfile.template"), "r") as template_file:
-				template = Template(template_file.read())
-			params = {
-				'image': img.fullname,
-				'user': dev["username"],
-				'pass': dev["password"]
-			}
-			content = template.substitute(params)
-			
-			# Create the Docker directory and add its content
-			try:
-				os.makedirs(to_root_path("run/walt/docker/"+dev["name"]), exist_ok=True)
-				shutil.copy(to_root_path("var/useradd.sh"), to_root_path("run/walt/docker/"+dev["name"]+"/"))
-				with open(to_root_path("run/walt/docker/"+dev["name"]+"/Dockerfile"), "w+") as docker_file:
-					docker_file.write(content)
-				api.images.build(dev["name"], to_root_path("run/walt/docker/"+dev["name"]+"/"))
-			except Exception as e:
-				log(WARNING, self.get_name()+".receive_devices: failed to add the user for dev "+dev["name"])
-				log(ERROR, e)
-				res[WARNING] += ["failed to add the user for dev "+dev["name"]]
-				fails += 1
-				continue
-
-			# Rename the device if necessary
-			if not node.name == dev["name"]:
-				node.rename(dev["name"])
-			node.config.mount_persist = False
-			node.config.netsetup = 'NAT'
-
-			dev["ip"] = node.ip
-
-			glob.DEVS += [dev]
-
-		res["fails"] = fails
-		return res
+	def device_ip(self, device):
+		return device.ip
 
 	def get_ips(self):
 		ips = []
-		for dev in glob.DEVS:
-			ips += [{"name":dev["name"], "ip":dev["ip"], "id":dev["id"]}]
+		for honeypot in self.server.config:
+			ips += [{"ip":honeypot["device"]["ip"], "id":honeypot["id"]}]
 		return {"success": True, "answer": ips}
 
 	def boot_devices(self):
 		res = {"success": True, WARNING: [], ERROR: []}
 		nodes = api.nodes.get_nodes()
 
-		for dev in glob.DEVS:
-			subset = nodes.filter(mac=dev["mac"])
+		for honeypot in self.server.config:
+			subset = nodes.filter(mac=honeypot["device"]["mac"])
 			if len(subset) > 0:
 				node = list(subset)[0]
-				node.boot(dev["name"]) # The image with the valid user has the node name
+				node.boot(honeypot["device"]["name"]) # The image with the valid user has the node name
 			else:
-				res[WARNING] += ["failed to boot "+dev["name"]]
+				res[WARNING] += ["failed to boot "+honeypot["device"]["name"]]
 
 	def reboot(self, dev_name):
 		nodes = api.nodes.get_nodes()
 
-		subset = nodes.filter(name=dev)
+		subset = nodes.filter(name=dev_name)
 		if len(subset) > 0:
 			node = list(subset)[0]
 			node.reboot(hard_only=True)
@@ -129,22 +95,12 @@ class WaltController:
 		else:
 			return {"success": False, ERROR: ["failed to reboot "+dev_name]}
 
-	def reinit(self):
-		# Deleting images
+	def remove_images(self):
 		log(INFO, "removing images")
-		log(DEBUG, "using previous configuration: ", glob.DEVS)
 		images = api.images.get_images()
-		for dev in glob.DEVS:
-			if dev["name"] in images:
-				images[dev["name"]].remove()
-				log(DEBUG, "image "+str(dev["name"])+" removed")
+		for honeypot in self.server.config:
+			if honeypot["device"]["name"] in images:
+				images[honeypot["device"]["name"]].remove()
+				log(DEBUG, "image "+str(honeypot["device"]["name"])+" removed")
 			else:
-				log(DEBUG, "image "+str(dev["name"])+" not found")
-
-		# Restoring configuration
-		log(INFO, "restoring configuration")
-		glob.DEVS = []
-		with open(to_root_path("etc/honeywalt_vm.cfg"), "w") as conf_file:
-			conf_file.write(json.dumps(glob.DEVS, indent=4))
-			conf_file.flush()
-			os.fsync(conf_file)
+				log(DEBUG, "image "+str(honeypot["device"]["name"])+" not found")
