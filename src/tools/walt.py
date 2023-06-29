@@ -99,9 +99,13 @@ class WaltController:
 
 	def remove_images(self):
 		log(INFO, "removing images")
+		nodes = api.nodes.get_nodes()
 		images = api.images.get_images()
 		for honeypot in self.server.config:
 			if honeypot["device"]["name"] in images:
+				# Free the node, so that the image can be removed
+				nodes[honeypot["device"]["name"]].boot("default")
+				# Remove the image
 				images[honeypot["device"]["name"]].remove()
 				log(DEBUG, "image "+str(honeypot["device"]["name"])+" removed")
 			else:
