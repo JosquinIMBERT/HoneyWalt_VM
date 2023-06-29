@@ -119,7 +119,7 @@ class VMController(Controller):
 			return {"success": False, ERROR: ["cannot add devices during run phase"]}
 		else:
 			honeypots = self.socket.recv_obj()
-			return self.server.walt.receive_honeypots(honeypots)
+			return self.server.receive_honeypots(honeypots)
 
 	def exposed_get_ips(self):
 		return self.server.walt.get_ips()
