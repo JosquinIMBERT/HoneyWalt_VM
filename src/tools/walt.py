@@ -63,6 +63,8 @@ class WaltController:
 		except Exception as e:
 			return None
 
+		return True
+
 	def device_ip(self, device):
 		return device.ip
 
