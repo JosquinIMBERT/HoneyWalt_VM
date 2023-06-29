@@ -69,7 +69,7 @@ class VMServer:
 				continue
 
 			# Honeypot Image
-			res = self.walt.create_honeypot_image(h["device"]["mac"], img, h["credentials"]["username"], h["credentials"]["password"])
+			res = self.walt.create_honeypot_image(h["device"]["mac"], img, h["credentials"]["user"], h["credentials"]["pass"])
 			if not res:
 				log(ERROR, "failed to build the image for honeypot", str(h["id"]))
 				continue
