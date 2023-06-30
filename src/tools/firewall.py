@@ -22,5 +22,4 @@ class Firewall:
 			log(WARNING, "Firewall.up: tried to start the firewall while no IP is known")
 
 	def stop(self):
-		if len(self.str_ips) > 0:
-			run(to_root_path("src/script/firewall-down.sh")+" "+self.str_ips)
+		run(to_root_path("src/script/firewall-down.sh"))
