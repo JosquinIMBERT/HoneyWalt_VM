@@ -13,10 +13,10 @@ class Firewall:
 	def start(self):
 		self.ips = []
 		for honeypot in self.server.config:
-			ips += [honeypot["device"]["ip"]]
-		str_ips = ",".joint(ips)
-		run(to_root_path("src/script/firewall-up.sh")+" "+str_ips)
+			self.ips += [honeypot["device"]["ip"]]
+		self.str_ips = ",".join(self.ips)
+		run(to_root_path("src/script/firewall-up.sh")+" "+self.str_ips)
 
 	def stop(self):
 		if len(self.str_ips) > 0:
-			run(to_root_path("src/script/firewall-down.sh")+" "+str_ips)
+			run(to_root_path("src/script/firewall-down.sh")+" "+self.str_ips)
