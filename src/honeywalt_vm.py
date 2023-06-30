@@ -3,6 +3,7 @@ import argparse, json, os, signal, sys
 
 # Internal
 from tools.walt import WaltController
+from tools.firewall import Firewall
 from tools.wireguard import WireguardController
 from vm.controller import VMController
 
@@ -23,6 +24,7 @@ class VMServer:
 
 		self.vm = VMController(self)
 		self.walt = WaltController(self)
+		self.firewall = Firewall(self)
 		self.wireguard = WireguardController(self)
 
 		self.user_conf_file = to_root_path("etc/honeywalt_vm.cfg")
