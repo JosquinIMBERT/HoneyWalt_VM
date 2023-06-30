@@ -13,13 +13,12 @@ WG_PEER_IP   = "192.168."
 WG_PEER_MASK = "24"
 CONF_PATH	 = "/etc/wireguard/"
 
-class WireguardController:
+class Wireguard:
 
 	ENDPOINT_HOST = "10.0.0.1"
 	ENDPOINT_PORT = 6000
 
 	def __init__(self, server):
-		log(INFO, "WireguardController.__init__: creating the WireguardController")
 		self.server = server
 		self.name = None
 
@@ -56,10 +55,10 @@ class WireguardController:
 		return {"success": True, "answer": keys}
 
 	def door_ip(self):
-		return WireguardController.ENDPOINT_HOST
+		return Wireguard.ENDPOINT_HOST
 
 	def door_port(self, ident):
-		return WireguardController.ENDPOINT_PORT + int(ident)
+		return Wireguard.ENDPOINT_PORT + int(ident)
 
 	def up(self):
 		res = {"success": True, ERROR: [], WARNING: []}

@@ -2,9 +2,9 @@
 import argparse, json, os, signal, sys
 
 # Internal
-from tools.walt import WaltController
+from tools.walt import Walt
 from tools.firewall import Firewall
-from tools.wireguard import WireguardController
+from tools.wireguard import Wireguard
 from vm.controller import VMController
 
 # Common
@@ -20,12 +20,17 @@ def handle(signum, frame):
 class VMServer:
 	"""VMServer"""
 	def __init__(self):
-		log(DEBUG, "VMServer.__init__: initializing global variables")
-
+		log(INFO, "VMServer: building the VM controller")
 		self.vm = VMController(self)
-		self.walt = WaltController(self)
+
+		log(INFO, "VMServer: building the walt controller")
+		self.walt = Walt(self)
+
+		log(INFO, "VMServer: building the firewall controller")
 		self.firewall = Firewall(self)
-		self.wireguard = WireguardController(self)
+
+		log(INFO, "VMServer: building the wireguard controller")
+		self.wireguard = Wireguard(self)
 
 		self.user_conf_file = to_root_path("etc/honeywalt_vm.cfg")
 		self.dist_conf_file = to_root_path("etc/honeywalt_vm.cfg.dist")

@@ -11,9 +11,7 @@ from common.vm.proto import *
 class VMController(Controller):
 	def __init__(self, server):
 		Controller.__init__(self)
-		
-		log(INFO, "VMController.__init__: creating the VMController")
-		
+
 		self.server = server
 
 		self.socket = ClientSocket(socktype=socket.AF_VSOCK)

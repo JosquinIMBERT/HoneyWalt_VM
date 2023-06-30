@@ -8,9 +8,8 @@ from common.utils.files import *
 from common.utils.logs import *
 from common.utils.misc import *
 
-class WaltController:
+class Walt:
 	def __init__(self, server):
-		log(INFO, "WaltController.__init__: creating the WaltController")
 		self.server = server
 		self.name = None
 
