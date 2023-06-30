@@ -17,9 +17,14 @@ class Firewall:
 			self.ips += [honeypot["device"]["ip"]]
 		if len(self.ips) > 0:
 			self.str_ips = ",".join(self.ips)
-			run(to_root_path("src/script/firewall-up.sh")+" "+self.str_ips)
+			if run(to_root_path("src/script/firewall-up.sh")+" "+self.str_ips):
+				return {"success": True, ERROR: [], WARNING: []}
 		else:
 			log(WARNING, "Firewall.up: tried to start the firewall while no IP is known")
+		return {"success": False, ERROR: ["no IP was found"], WARNING: []}
 
 	def stop(self):
-		run(to_root_path("src/script/firewall-down.sh"))
+		if run(to_root_path("src/script/firewall-down.sh")):
+			return {"success": True, ERROR: [], WARNING: []}
+		else:
+			return {"success": False, ERROR: ["failed to stop the firewall"], WARNING: []}
