@@ -33,6 +33,7 @@ iptables -t mangle -F NOSPOOF
 iptables -t mangle -A NOSPOOF -s ${ips} -j RETURN
 iptables -t mangle -A NOSPOOF -d ${ips} -j RETURN
 iptables -t mangle -A NOSPOOF -d 224.0.1.129 -j RETURN # Allow PTP
+iptables -t mangle -A NOSPOOF -p udp --dport 67:68 --sport 67:68 -j RETURN # Allow DHCP
 iptables -t mangle -A NOSPOOF -j LOG --log-prefix "[NOSPOOF_DROP] " # Adding log message for spoofed packets
 iptables -t mangle -A NOSPOOF -j DROP
 iptables -t mangle -I PREROUTING 1 -i walt-net -j NOSPOOF
