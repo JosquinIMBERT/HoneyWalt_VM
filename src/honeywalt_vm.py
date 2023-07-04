@@ -118,7 +118,7 @@ if __name__ == '__main__':
 		path = Path(pid_file_path)
 		if path.parent.exists():
 			with open(pid_file_path, "w") as pid_file:
-				pid_file.write(os.getpid())
+				pid_file.write(str(os.getpid()))
 
 	server = VMServer()
 	server.start()
