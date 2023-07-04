@@ -102,11 +102,23 @@ class VMServer:
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='HoneyWalt VM Daemon')
 	parser.add_argument("-l", "--log-level", nargs=1, help="Set log level (COMMAND, DEBUG, INFO, WARNING, ERROR, FATAL)")
+	parser.add_argument("-p", "--pid-file", nargs=1, help="Select a PID file")
 
 	options = parser.parse_args()
+
+	# Log Level
 	if options.log_level is not None:
 		log_level = options.log_level[0]
 		set_log_level(log_level)
+
+	# PID file
+	if options.pid_file is not None:
+		pid_file_path = options.pid_file[0]
+		from pathlib import Path
+		path = Path(pid_file_path)
+		if path.parent.exists():
+			with open(pid_file_path, "w") as pid_file:
+				pid_file.write(os.getpid())
 
 	server = VMServer()
 	server.start()
