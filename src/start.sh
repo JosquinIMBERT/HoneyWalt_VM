@@ -1,8 +1,24 @@
 #!/bin/bash
 
-# This script should be called at boot by the VM
+HOME=$(realpath $(dirname $(dirname "$0")))
 
-git -C /root/HoneyWalt_VM/ reset -q --hard
-git -C /root/HoneyWalt_VM/ pull -q --recurse-submodules
-/root/HoneyWalt_VM/requirements.sh
-python3 /root/HoneyWalt_VM/src/honeywalt_vm.py -l CMD
+if [[ $# -lt 1 ]]; then
+	echo "Usage: $0 <log-level> [pidfile]"
+	exit 1
+else
+	loglevel="$1"
+fi
+
+if [[ $# -gt 1 ]]; then
+	pidfile="$1"
+else
+	pidfile="${HOME}/var/honeywalt_vm.pid"
+fi
+
+git -C ${HOME} reset -q --hard
+git -C ${HOME} pull -q --recurse-submodules
+${HOME}/requirements.sh
+
+python3 ${HOME}/src/honeywalt_vm.py \
+	--log-level ${loglevel} \
+	--pid-file ${pidfile}
